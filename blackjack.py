@@ -4,6 +4,7 @@ from EtienneAgent import EtienneAgent
 from GavenAgent import GavenAgent
 from KevinAgent import KevinAgent
 from Dealer import Dealer
+import Enums
 import card_methods
 
 SUITS = ["♥", "♦", "♠", "♣"]
@@ -220,22 +221,21 @@ def print_table(dealer, *agents, is_dealer_turn):
 
 def handle_agent_choice(choice, agent):
     """Handle agent's choice"""
-    if choice == "HIT":
+    if choice == Enums.AgentStates.HIT:
         new_card = CARDS.pop()
         agent.add_card_to_hand(new_card)
         # Update the agent's status if needed
         # (You'll need to implement the `calculate_hand_value` function)
         if card_methods.calculate_hand_value(agent.get_hand()) > 21:
-            agent.set_status("BUST")
-    elif choice == "STAND":
-        agent.set_status("STAND")
-    elif choice == "DOUBLE DOWN":
+            agent.set_status(Enums.AgentStates.BUST)
+    elif choice == Enums.AgentStates.STAND:
+        agent.set_status(Enums.AgentStates.STAND)
+    elif choice == Enums.AgentStates.DOUBLE_DOWN:
         new_card = CARDS.pop()
         agent.add_card_to_hand(new_card)
         agent._bet *= 2  # Double the bet
         agent._chips -= agent._bet  # Update the chips
-        # agent._status = "STAND"  # Normally, you stand after doubling down
-    elif choice == "SPLIT":
+    elif choice == Enums.AgentStates.SPLIT:
         # Implement this part as per your game logic
         pass
 

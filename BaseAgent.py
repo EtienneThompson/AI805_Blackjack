@@ -1,7 +1,10 @@
+import Enums
+
+
 class BaseAgent:
     def __init__(self, name, is_debug):
         self._name = name
-        self._status = "ACTIVE"
+        self._status = Enums.AgentStates.ACTIVE
         self._cards = list()
         self._chips = 1000  # DO NOT CHANGE FROM 1000 CHIPS
         self._bet = 0
@@ -12,7 +15,8 @@ class BaseAgent:
         return self._name
 
     def get_agent_status(self):
-        return self._status
+        agentState = str(self._status)
+        return agentState.split(".")[1]
 
     def get_hand(self):
         return self._cards
@@ -24,7 +28,10 @@ class BaseAgent:
         return self._bet
 
     def is_agent_done(self):
-        return self._status == "STAND" or self._status == "BUST" or self._status == "DOUBLE DOWN"
+        return (
+            self._status == Enums.AgentStates.STAND or
+            self._status == Enums.AgentStates.BUST or
+            self._status == Enums.AgentStates.DOUBLE_DOWN)
 
     def add_card_to_hand(self, card):
         self._cards.append(card)

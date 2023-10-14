@@ -1,4 +1,5 @@
 from BaseAgent import BaseAgent
+import Enums
 import card_methods
 
 
@@ -18,8 +19,8 @@ class Dealer(BaseAgent):
         self.wait_for_user_input()
 
         if (card_methods.calculate_hand_value(self._cards) < 17):
-            self._status = "HIT"
+            self._status = Enums.AgentStates.HIT
         else:
-            self._status = "STAND"
+            self._status = Enums.AgentStates.STAND
 
         return self._status
