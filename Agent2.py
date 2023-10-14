@@ -52,6 +52,6 @@ class Agent2:
 
         elif self._status == "SPLIT":
             # Logic for splitting the cards into two hands
-            pass  # Implement this part as per your game logic
+            print("Testing")  # Implement this part as per your game logic
             
         return self._status
