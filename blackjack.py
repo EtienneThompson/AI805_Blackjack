@@ -4,6 +4,7 @@ from EtienneAgent import EtienneAgent
 from GavenAgent import GavenAgent
 from KevinAgent import KevinAgent
 from Dealer import Dealer
+
 import Enums
 import card_methods
 
