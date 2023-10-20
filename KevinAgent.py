@@ -1,11 +1,24 @@
 import random
 from BaseAgent import BaseAgent
 import Enums
-
+import card_methods
 
 class KevinAgent(BaseAgent):
+    DEFAULT_BET = 50  # This will be the default betting amount
+    
+    def place_bet(self):  # this is new betting function 
+        """Decide how much to bet based on the current hand."""
+        # Check if the hand contains an Ace or a 10-value card
+        if "A" in self._cards or any(card[:-1] in ["10", "J", "Q", "K"] for card in self._cards):
+            return min(self._chips, self.DEFAULT_BET * 2)  # Bet double the default amount, but not more than available chips
+        else:
+            return min(self._chips, self.DEFAULT_BET)  # Bet the default amount, but not more than available chips
+
     def run_agent(self):
         self.wait_for_user_input()
+        
+        self._bet = self.place_bet()  # At the start of the round the Agent decides how much to bet. 
+        self._chips -= self._bet  # The agent deducts the bet amount from their total chips
 
         actions = [Enums.AgentStates.HIT, Enums.AgentStates.STAND]
         if self._bet * 2 <= self._chips:  # Check if the agent has enough chips to double down
@@ -13,7 +26,7 @@ class KevinAgent(BaseAgent):
         if self.can_split():
             actions.append(Enums.AgentStates.SPLIT)
 
-        self._status = random.choice(actions)
+        self._status = random.choice(actions) # The agent selects one of the possible actions and sets it as their current status. 
 
         if self._status == Enums.AgentStates.DOUBLE_DOWN:
             self._bet *= 2  # Double the bet
