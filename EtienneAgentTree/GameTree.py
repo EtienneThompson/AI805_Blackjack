@@ -7,7 +7,7 @@ class GameTree:
 
     def __init__(self, cards):
         # Change this to generate deeper game trees (more sequences of moves)
-        self.max_depth = 2
+        self.max_depth = 4
         self._cards = cards
         self.root = BaseNode.BaseNode(self._cards)
         self.generate_game_tree(self.root, 0)
@@ -24,12 +24,13 @@ class GameTree:
         if depth % 2 == 0:
             print("Adding decision nodes...")
             # Decision tree node
-            for decision in possible_decisions:
-                decision = DecisionNode.DecisionNode(
-                    node.get_cards(), decision)
-                node.add_child(decision)
+            if node.get_hand_value() < 21:
+                for decision in possible_decisions:
+                    decision = DecisionNode.DecisionNode(
+                        node.get_cards(), decision)
+                    node.add_child(decision)
 
-                self.generate_game_tree(decision, depth + 1)
+                    self.generate_game_tree(decision, depth + 1)
 
         if depth % 2 == 1:
             # Chance tree node
@@ -41,7 +42,7 @@ class GameTree:
             ):
                 for rank in possible_ranks:
                     random = RandomNode.RandomNode(
-                        node.get_cards(), rank)
+                        node.get_cards(), rank + "♥")
                     node.add_child(random)
 
                     self.generate_game_tree(random, depth + 1)
@@ -67,12 +68,7 @@ class GameTree:
 
         for depth in output:
             for node in depth:
-                if isinstance(node, DecisionNode.DecisionNode):
-                    print("Decision " + node.type + "\t", end="")
-                elif isinstance(node, RandomNode.RandomNode):
-                    print("Random " + node.rank + "\t", end="")
-                elif isinstance(node, BaseNode.BaseNode):
-                    print("Root\t", end="")
+                print(str(node) + "\t", end="")
 
             print("")
 

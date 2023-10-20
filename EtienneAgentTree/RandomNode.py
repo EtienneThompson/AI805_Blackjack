@@ -7,4 +7,8 @@ class RandomNode(BaseNode.BaseNode):
 
     def __init__(self, hand, rank):
         super().__init__(hand)
+        self._cards.append(rank)
         self.rank = rank
+
+    def __str__(self):
+        return "Random " + str(self.get_cards())

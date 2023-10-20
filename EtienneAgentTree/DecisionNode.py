@@ -12,3 +12,6 @@ class DecisionNode(BaseNode.BaseNode):
     def can_have_chance_nodes(self):
         """Determines if the node can have chance nodes."""
         return self.type == "HIT" or self.type == "DOUBLE_DOWN" or self.type == "SPLIT"
+
+    def __str__(self):
+        return "Decision " + self.type + " " + str(self.get_cards())

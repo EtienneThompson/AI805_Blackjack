@@ -28,3 +28,6 @@ class BaseNode:
     def get_hand_value(self):
         """Computes the value of the cards in the hand."""
         return card_methods.calculate_hand_value(self._cards)
+
+    def __str__(self):
+        return "Root"
