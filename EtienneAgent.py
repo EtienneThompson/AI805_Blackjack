@@ -18,8 +18,10 @@ class EtienneAgent(BaseAgent):
         """
         self.wait_for_user_input()
 
-        game_tree = GameTree.GameTree(self._cards)
+        game_tree = GameTree.GameTree(self._cards, self._debug)
         game_tree.print_tree()
+
+        self.wait_for_user_input()
 
         actions = [Enums.AgentStates.HIT, Enums.AgentStates.STAND]
         if self._bet * 2 <= self._chips:  # Check if the agent has enough chips to double down

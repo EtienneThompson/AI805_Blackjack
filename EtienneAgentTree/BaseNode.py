@@ -8,7 +8,6 @@ class BaseNode:
     def __init__(self, cards):
         self._cards = cards
         self.children = list()
-        self.weight = 0
 
     def get_children(self):
         """Returns all the children of this node."""
@@ -28,6 +27,16 @@ class BaseNode:
     def get_hand_value(self):
         """Computes the value of the cards in the hand."""
         return card_methods.calculate_hand_value(self._cards)
+
+    def get_node_weight(self):
+        """Computes weight of node based on hand value"""
+        hand_value = self.get_hand_value()
+        if (hand_value <= 21):
+            return hand_value
+        else:
+            # Hands that have bust should not contribute to the probability of
+            # a good move.
+            return 0
 
     def __str__(self):
         return "Root"

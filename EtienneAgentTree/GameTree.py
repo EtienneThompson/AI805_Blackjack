@@ -5,7 +5,8 @@ from EtienneAgentTree import DecisionNode, RandomNode, BaseNode
 class GameTree:
     """Represents the game tree for a blackjack move."""
 
-    def __init__(self, cards):
+    def __init__(self, cards, is_debug):
+        self.is_debug = is_debug
         # Change this to generate deeper game trees (more sequences of moves)
         self.max_depth = 4
         self._cards = cards
@@ -22,7 +23,7 @@ class GameTree:
                           "7", "8", "9", "10", "J", "Q", "K", "A"]
 
         if depth % 2 == 0:
-            print("Adding decision nodes...")
+            self._debug("Adding decision nodes...")
             # Decision tree node
             if node.get_hand_value() < 21:
                 for decision in possible_decisions:
@@ -34,7 +35,7 @@ class GameTree:
 
         if depth % 2 == 1:
             # Chance tree node
-            print("Adding random nodes...")
+            self._debug("Adding random nodes...")
 
             if (
                 node.can_have_chance_nodes() and
@@ -42,7 +43,7 @@ class GameTree:
             ):
                 for rank in possible_ranks:
                     random = RandomNode.RandomNode(
-                        node.get_cards(), rank + "♥")
+                        node.get_cards(), rank + "♥", 1 / 13)
                     node.add_child(random)
 
                     self.generate_game_tree(random, depth + 1)
@@ -68,16 +69,20 @@ class GameTree:
 
         for depth in output:
             for node in depth:
-                print(str(node) + "\t", end="")
+                self._debug(str(node) + "\t", end="")
 
-            print("")
+            self._debug("")
 
     def _generate_output_for_node(self, node, output, depth):
         """Helper method for printing the tree."""
-        if (len(output) == depth):
+        if len(output) == depth:
             output.append(list())
 
         output[depth].append(node)
 
         for child in node.get_children():
             self._generate_output_for_node(child, output, depth + 1)
+
+    def _debug(self, data, end="\n"):
+        if self.is_debug:
+            print(data, end=end)
