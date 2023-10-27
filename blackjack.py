@@ -169,13 +169,11 @@ def calculate_max_widths(dealer, *agents):
     max_hand_label = len(" CARDS ")
     max_hand_content = 0
     for agent in agents:
+        # Need to determine max length of all hands
         for i in range(0, agent.get_number_of_hands()):
             max_size = max([formatted_cards(agent.get_hand(
                 i))] + [formatted_cards(dealer.get_hidden_hand())], key=len)
             max_hand_content = max(len(max_size), max_hand_content)
-
-    # max_hand_content = max([formatted_cards(agent.get_hand(
-    # )) for agent in agents] + [formatted_cards(dealer.get_hidden_hand())], key=len)
     max_hand = max(max_hand_label, max_hand_content + 2)
 
     # For Bet Column
@@ -188,12 +186,11 @@ def calculate_max_widths(dealer, *agents):
     max_status_label = len(" STATUS ")
     max_status_content = 0
     for agent in agents:
+        # Need to determine max length of all hands
         for i in range(0, agent.get_number_of_hands()):
             max_size = max([agent.get_agent_status(i)] +
                            ['ACTIVE', dealer.get_agent_status()], key=len)
             max_status_content = max(len(max_size), max_status_content)
-    # max_status_content = max([agent.get_agent_status(
-    # ) for agent in agents] + ['ACTIVE', dealer.get_agent_status()], key=len)
     max_status = max(max_status_label, max_status_content + 2)
 
     # Return max lengths, +2 is for padding
@@ -251,7 +248,6 @@ def handle_agent_choice(choice, agent, hand):
         agent._bet *= 2  # Double the bet
         agent._chips -= agent._bet  # Update the chips
     elif choice == Enums.AgentStates.SPLIT:
-        # Implement this part as per your game logic
         new_card_1 = CARDS.pop()
         new_card_2 = CARDS.pop()
         agent.split_hand(new_card_1, new_card_2)

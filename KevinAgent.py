@@ -28,8 +28,7 @@ class KevinAgent(BaseAgent):
         if self._bet * 2 <= self._chips:  # Check if the agent has enough chips to double down
             actions.append(Enums.AgentStates.DOUBLE_DOWN)
         if self.can_split(hand):
-            # actions.append(Enums.AgentStates.SPLIT)
-            actions = [Enums.AgentStates.SPLIT]
+            actions.append(Enums.AgentStates.SPLIT)
 
         # The agent selects one of the possible actions and sets it as their current status.
         self._statuses[hand] = random.choice(actions)
