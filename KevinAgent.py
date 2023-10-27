@@ -32,10 +32,10 @@ class KevinAgent(BaseAgent):
             actions = [Enums.AgentStates.SPLIT]
 
         # The agent selects one of the possible actions and sets it as their current status.
-        self._status = random.choice(actions)
+        self._statuses[hand] = random.choice(actions)
 
-        if self._status == Enums.AgentStates.DOUBLE_DOWN:
+        if self._statuses[hand] == Enums.AgentStates.DOUBLE_DOWN:
             self._bet *= 2  # Double the bet
             self._chips -= self._bet  # Update the chips
 
-        return self._status
+        return self._statuses[hand]

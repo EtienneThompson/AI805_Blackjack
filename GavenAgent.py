@@ -14,10 +14,10 @@ class GavenAgent(BaseAgent):
             # actions.append(Enums.AgentStates.SPLIT)
             actions = [Enums.AgentStates.SPLIT]
 
-        self._status = random.choice(actions)
+        self._statuses[hand] = random.choice(actions)
 
-        if self._status == Enums.AgentStates.DOUBLE_DOWN:
+        if self._statuses[hand] == Enums.AgentStates.DOUBLE_DOWN:
             self._bet *= 2  # Double the bet
             self._chips -= self._bet  # Update the chips
 
-        return self._status
+        return self._statuses[hand]

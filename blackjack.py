@@ -186,9 +186,15 @@ def calculate_max_widths(dealer, *agents):
 
     # For Status Column
     max_status_label = len(" STATUS ")
-    max_status_content = max([agent.get_agent_status(
-    ) for agent in agents] + ['ACTIVE', dealer.get_agent_status()], key=len)
-    max_status = max(max_status_label, len(max_status_content) + 2)
+    max_status_content = 0
+    for agent in agents:
+        for i in range(0, agent.get_number_of_hands()):
+            max_size = max([agent.get_agent_status(i)] +
+                           ['ACTIVE', dealer.get_agent_status()], key=len)
+            max_status_content = max(len(max_size), max_status_content)
+    # max_status_content = max([agent.get_agent_status(
+    # ) for agent in agents] + ['ACTIVE', dealer.get_agent_status()], key=len)
+    max_status = max(max_status_label, max_status_content + 2)
 
     # Return max lengths, +2 is for padding
     return max_name + 2, max_chips + 2, max_hand + 2, max_bet + 2, max_status + 2
@@ -223,7 +229,7 @@ def print_table(dealer, *agents, is_dealer_turn):
     for agent in agents:
         for i in range(0, agent.get_number_of_hands()):
             debug("|" + formatted_column(" " + agent.get_name() + " ", max_name_width) + "|" + formatted_column(" " + formatted_dollar(agent.get_chips()) + " ", max_chips_width) + "|" + formatted_column(" " + formatted_cards(agent.get_hand(i),
-                  max_hand_width) + " ", max_hand_width) + "|" + formatted_column(" " + formatted_dollar(agent.get_bet()) + " ", max_bet_width) + "|" + formatted_column(" " + agent.get_agent_status() + " ", max_status_width) + "|")
+                  max_hand_width) + " ", max_hand_width) + "|" + formatted_column(" " + formatted_dollar(agent.get_bet()) + " ", max_bet_width) + "|" + formatted_column(" " + agent.get_agent_status(i) + " ", max_status_width) + "|")
 
     debug(sep_line)
 
@@ -236,9 +242,9 @@ def handle_agent_choice(choice, agent, hand):
         # Update the agent's status if needed
         # (You'll need to implement the `calculate_hand_value` function)
         if card_methods.calculate_hand_value(agent.get_hand()) > 21:
-            agent.set_status(Enums.AgentStates.BUST)
+            agent.set_status(Enums.AgentStates.BUST, hand)
     elif choice == Enums.AgentStates.STAND:
-        agent.set_status(Enums.AgentStates.STAND)
+        agent.set_status(Enums.AgentStates.STAND, hand)
     elif choice == Enums.AgentStates.DOUBLE_DOWN:
         new_card = CARDS.pop()
         agent.add_card_to_hand(new_card, hand)
@@ -257,6 +263,9 @@ def run_turn_for_agent(agent, dealer, all_players):
     while not agent.is_agent_done():
         # Run a single move for each hand that is available.
         for i in range(0, agent.get_number_of_hands()):
+            if agent.is_agent_hand_done(i):
+                continue  # skip any already finished hands.
+
             print_table(dealer, *all_players, is_dealer_turn=(agent == dealer))
 
             choice = agent.run_agent(i)
