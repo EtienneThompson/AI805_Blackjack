@@ -1,5 +1,4 @@
 """Blackjack agent created by Etienne."""
-import random
 from BaseAgent import BaseAgent
 from EtienneAgentTree import GameTree
 import Enums
@@ -18,21 +17,13 @@ class EtienneAgent(BaseAgent):
         """
         self.wait_for_user_input()
 
-        game_tree = GameTree.GameTree(self._cards, self._debug)
-        game_tree.print_tree()
+        game_tree = GameTree.GameTree(self._hands[hand], self._debug)
+        # game_tree.print_tree()
 
         self.wait_for_user_input()
 
-        actions = [Enums.AgentStates.HIT, Enums.AgentStates.STAND]
-        if self._bet * 2 <= self._chips:  # Check if the agent has enough chips to double down
-            actions.append(Enums.AgentStates.DOUBLE_DOWN)
-        if self.can_split(hand):
-            actions.append(Enums.AgentStates.SPLIT)
+        decision = game_tree.make_decision()
+        self.debug(decision)
 
-        self._statuses[hand] = random.choice(actions)
-
-        if self._statuses[hand] == Enums.AgentStates.DOUBLE_DOWN:
-            self._bet *= 2  # Double the bet
-            self._chips -= self._bet  # Update the chips
-
+        self._statuses[hand] = Enums.AgentStates[decision[0]]
         return self._statuses[hand]
