@@ -11,7 +11,7 @@ class EtienneAgent(BaseAgent):
     agent's current hand and knowledge of the game.
     """
 
-    def run_agent(self):
+    def run_agent(self, hand):
         """
         Constructs a game tree with random nodes, and runs the expect-minimax
         algorithm over the game tree to find the optimal move.
@@ -26,17 +26,13 @@ class EtienneAgent(BaseAgent):
         actions = [Enums.AgentStates.HIT, Enums.AgentStates.STAND]
         if self._bet * 2 <= self._chips:  # Check if the agent has enough chips to double down
             actions.append(Enums.AgentStates.DOUBLE_DOWN)
-        if self.can_split():
+        if self.can_split(hand):
             actions.append(Enums.AgentStates.SPLIT)
 
-        self._status = random.choice(actions)
+        self._statuses[hand] = random.choice(actions)
 
-        if self._status == Enums.AgentStates.DOUBLE_DOWN:
+        if self._statuses[hand] == Enums.AgentStates.DOUBLE_DOWN:
             self._bet *= 2  # Double the bet
             self._chips -= self._bet  # Update the chips
 
-        elif self._status == Enums.AgentStates.SPLIT:
-            # Logic for splitting the cards into two hands
-            pass  # Implement this part as per your game logic
-
-        return self._status
+        return self._statuses[hand]

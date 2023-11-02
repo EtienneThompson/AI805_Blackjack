@@ -4,6 +4,7 @@ from EtienneAgent import EtienneAgent
 from GavenAgent import GavenAgent
 from KevinAgent import KevinAgent
 from Dealer import Dealer
+
 import Enums
 import card_methods
 
@@ -166,9 +167,14 @@ def calculate_max_widths(dealer, *agents):
 
     # For Cards Column
     max_hand_label = len(" CARDS ")
-    max_hand_content = max([formatted_cards(agent.get_hand(
-    )) for agent in agents] + [formatted_cards(dealer.get_hidden_hand())], key=len)
-    max_hand = max(max_hand_label, len(max_hand_content) + 2)
+    max_hand_content = 0
+    for agent in agents:
+        # Need to determine max length of all hands
+        for i in range(0, agent.get_number_of_hands()):
+            max_size = max([formatted_cards(agent.get_hand(
+                i))] + [formatted_cards(dealer.get_hidden_hand())], key=len)
+            max_hand_content = max(len(max_size), max_hand_content)
+    max_hand = max(max_hand_label, max_hand_content + 2)
 
     # For Bet Column
     max_bet_label = len(" BET ")
@@ -178,9 +184,14 @@ def calculate_max_widths(dealer, *agents):
 
     # For Status Column
     max_status_label = len(" STATUS ")
-    max_status_content = max([agent.get_agent_status(
-    ) for agent in agents] + ['ACTIVE', dealer.get_agent_status()], key=len)
-    max_status = max(max_status_label, len(max_status_content) + 2)
+    max_status_content = 0
+    for agent in agents:
+        # Need to determine max length of all hands
+        for i in range(0, agent.get_number_of_hands()):
+            max_size = max([agent.get_agent_status(i)] +
+                           ['ACTIVE', dealer.get_agent_status()], key=len)
+            max_status_content = max(len(max_size), max_status_content)
+    max_status = max(max_status_label, max_status_content + 2)
 
     # Return max lengths, +2 is for padding
     return max_name + 2, max_chips + 2, max_hand + 2, max_bet + 2, max_status + 2
@@ -213,41 +224,48 @@ def print_table(dealer, *agents, is_dealer_turn):
 
     # Print Agent details
     for agent in agents:
-        debug("|" + formatted_column(" " + agent.get_name() + " ", max_name_width) + "|" + formatted_column(" " + formatted_dollar(agent.get_chips()) + " ", max_chips_width) + "|" + formatted_column(" " + formatted_cards(agent.get_hand(),
-              max_hand_width) + " ", max_hand_width) + "|" + formatted_column(" " + formatted_dollar(agent.get_bet()) + " ", max_bet_width) + "|" + formatted_column(" " + agent.get_agent_status() + " ", max_status_width) + "|")
+        for i in range(0, agent.get_number_of_hands()):
+            debug("|" + formatted_column(" " + agent.get_name() + " ", max_name_width) + "|" + formatted_column(" " + formatted_dollar(agent.get_chips()) + " ", max_chips_width) + "|" + formatted_column(" " + formatted_cards(agent.get_hand(i),
+                  max_hand_width) + " ", max_hand_width) + "|" + formatted_column(" " + formatted_dollar(agent.get_bet()) + " ", max_bet_width) + "|" + formatted_column(" " + agent.get_agent_status(i) + " ", max_status_width) + "|")
 
     debug(sep_line)
 
 
-def handle_agent_choice(choice, agent):
+def handle_agent_choice(choice, agent, hand):
     """Handle agent's choice"""
     if choice == Enums.AgentStates.HIT:
         new_card = CARDS.pop()
-        agent.add_card_to_hand(new_card)
+        agent.add_card_to_hand(new_card, hand)
         # Update the agent's status if needed
         # (You'll need to implement the `calculate_hand_value` function)
         if card_methods.calculate_hand_value(agent.get_hand()) > 21:
-            agent.set_status(Enums.AgentStates.BUST)
+            agent.set_status(Enums.AgentStates.BUST, hand)
     elif choice == Enums.AgentStates.STAND:
-        agent.set_status(Enums.AgentStates.STAND)
+        agent.set_status(Enums.AgentStates.STAND, hand)
     elif choice == Enums.AgentStates.DOUBLE_DOWN:
         new_card = CARDS.pop()
-        agent.add_card_to_hand(new_card)
+        agent.add_card_to_hand(new_card, hand)
         agent._bet *= 2  # Double the bet
         agent._chips -= agent._bet  # Update the chips
     elif choice == Enums.AgentStates.SPLIT:
-        # Implement this part as per your game logic
-        pass
+        new_card_1 = CARDS.pop()
+        new_card_2 = CARDS.pop()
+        agent.split_hand(new_card_1, new_card_2)
 
 
 def run_turn_for_agent(agent, dealer, all_players):
     """Let agent make choices until in finished state"""
     debug(f"{agent.get_name()}'s turn is running")
     while not agent.is_agent_done():
-        print_table(dealer, *all_players, is_dealer_turn=(agent == dealer))
+        # Run a single move for each hand that is available.
+        for i in range(0, agent.get_number_of_hands()):
+            if agent.is_agent_hand_done(i):
+                continue  # skip any already finished hands.
 
-        choice = agent.run_agent()
-        handle_agent_choice(choice, agent)
+            print_table(dealer, *all_players, is_dealer_turn=(agent == dealer))
+
+            choice = agent.run_agent(i)
+            handle_agent_choice(choice, agent, i)
 
 
 def run_full_game():
