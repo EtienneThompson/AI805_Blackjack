@@ -23,7 +23,7 @@ class GameTree:
                           "7", "8", "9", "10", "J", "Q", "K", "A"]
 
         if depth % 2 == 0:
-            self._debug("Adding decision nodes...")
+            # self._debug("Adding decision nodes...")
             # Decision tree node
             if node.get_hand_value() < 21:
                 for decision in possible_decisions:
@@ -35,7 +35,7 @@ class GameTree:
 
         if depth % 2 == 1:
             # Chance tree node
-            self._debug("Adding random nodes...")
+            # self._debug("Adding random nodes...")
 
             if (
                 node.can_have_chance_nodes() and
@@ -53,7 +53,7 @@ class GameTree:
         leaves = list()
 
         # Recursive base case to return the current node if it is a leaf.
-        if (len(node.get_children()) == 0):
+        if len(node.get_children()) == 0:
             return [node]
 
         # Append the leaf nodes of all children together.
@@ -72,6 +72,34 @@ class GameTree:
                 self._debug(str(node) + "\t", end="")
 
             self._debug("")
+
+    def make_decision(self):
+        """Wrapper method for expeci-minimax algorithm method."""
+        return self._expectminimax(self.root)
+
+    def _expectminimax(self, node):
+        """Recursively computes the best move given the game tree rooted at node."""
+        if len(node.get_children()) == 0:
+            if isinstance(node, DecisionNode.DecisionNode):
+                return [node.type, node.get_node_weight()]
+            else:
+                return ["", node.get_node_weight()]
+
+        if isinstance(node, DecisionNode.DecisionNode):
+            weight = 0
+            for child in node.get_children():
+                _, value = self._expectminimax(child)
+                weight += child.probability * value
+            return [node.type, weight]
+        elif isinstance(node, RandomNode.RandomNode) or isinstance(node, BaseNode.BaseNode):
+            options = list()
+            for child in node.get_children():
+                options.append(self._expectminimax(child))
+            return max(options, key=lambda x: x[1])
+
+        # This case shouldn't happen, but just have a fallback in case.
+        self._debug("Fallback case")
+        return ["", node.get_node_weight()]
 
     def _generate_output_for_node(self, node, output, depth):
         """Helper method for printing the tree."""
