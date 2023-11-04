@@ -1,5 +1,6 @@
 """Represents the game tree for a blackjack move."""
 from EtienneAgentTree import DecisionNode, RandomNode, BaseNode
+import card_methods
 
 
 class GameTree:
@@ -18,7 +19,7 @@ class GameTree:
         if depth >= self.max_depth:
             return
 
-        possible_decisions = ["STAND", "HIT", "DOUBLE_DOWN", "SPLIT"]
+        possible_decisions = ["STAND", "HIT", "DOUBLE_DOWN"]
         possible_ranks = ["2", "3", "4", "5", "6",
                           "7", "8", "9", "10", "J", "Q", "K", "A"]
 
@@ -26,6 +27,8 @@ class GameTree:
             # self._debug("Adding decision nodes...")
             # Decision tree node
             if node.get_hand_value() < 21:
+                if card_methods.can_split_hand(node.get_cards()):
+                    possible_decisions.append("SPLIT")
                 for decision in possible_decisions:
                     decision = DecisionNode.DecisionNode(
                         node.get_cards(), decision)
@@ -75,27 +78,30 @@ class GameTree:
 
     def make_decision(self):
         """Wrapper method for expeci-minimax algorithm method."""
-        return self._expectminimax(self.root)
+        return self._expectminimax(self.root, 0)
 
-    def _expectminimax(self, node):
+    def _expectminimax(self, node, depth):
         """Recursively computes the best move given the game tree rooted at node."""
         if len(node.get_children()) == 0:
             if isinstance(node, DecisionNode.DecisionNode):
                 return [node.type, node.get_node_weight()]
             else:
-                return ["", node.get_node_weight()]
+                return ["STAND", node.get_node_weight()]
 
         if isinstance(node, DecisionNode.DecisionNode):
             weight = 0
             for child in node.get_children():
-                _, value = self._expectminimax(child)
+                _, value = self._expectminimax(child, depth+1)
                 weight += child.probability * value
+            print(f"Decision Node at depth {depth}: {node.type}, {weight}")
             return [node.type, weight]
         elif isinstance(node, RandomNode.RandomNode) or isinstance(node, BaseNode.BaseNode):
             options = list()
             for child in node.get_children():
-                options.append(self._expectminimax(child))
-            return max(options, key=lambda x: x[1])
+                options.append(self._expectminimax(child, depth+1))
+            maxNode = max(options, key=lambda x: x[1])
+            print(f"Random Node at depth {depth}: {maxNode[0]}, {maxNode[1]}")
+            return maxNode
 
         # This case shouldn't happen, but just have a fallback in case.
         self._debug("Fallback case")
