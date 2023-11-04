@@ -40,13 +40,12 @@ class GameTree:
             # Chance tree node
             # self._debug("Adding random nodes...")
 
-            if (
-                node.can_have_chance_nodes() and
-                node.get_hand_value() < 21
-            ):
+            if node.get_hand_value() < 21:
                 for rank in possible_ranks:
+                    self._debug(
+                        f"node type: {node.type} - is final decision: {node.is_final_decision()}")
                     random = RandomNode.RandomNode(
-                        node.get_cards(), rank + "♥", 1 / 13)
+                        node.get_cards(), rank + "♥", 1 / 13, node.is_final_decision())
                     node.add_child(random)
 
                     self.generate_game_tree(random, depth + 1)
@@ -84,24 +83,37 @@ class GameTree:
         """Recursively computes the best move given the game tree rooted at node."""
         if len(node.get_children()) == 0:
             if isinstance(node, DecisionNode.DecisionNode):
+                self._debug(
+                    f"Decision node leaf at depth {depth}: {node.type}, {node.get_node_weight()}")
                 return [node.type, node.get_node_weight()]
+            elif isinstance(node, RandomNode.RandomNode):
+                # Since it's a random node, the decision will be made in the parent node.
+                self._debug(
+                    f"Random node leaf at depth {depth}: \"\", is_final_chance node: {node.is_final_chance()}, {node.get_node_weight(reverse_weight=node.is_final_chance())}, card: {node.get_cards()}")
+                return ["", node.get_node_weight(reverse_weight=node.is_final_chance())]
             else:
-                return ["STAND", node.get_node_weight()]
+                # This happens when we have no decision tree because we have a 21
+                # in our hand already.
+                return ["STAND", 21]
 
         if isinstance(node, DecisionNode.DecisionNode):
             weight = 0
+            self._debug(
+                f"Checking weight for decision node at depth {depth}: {node.type}")
             for child in node.get_children():
                 _, value = self._expectminimax(child, depth+1)
                 weight += child.probability * value
-            print(f"Decision Node at depth {depth}: {node.type}, {weight}")
+            self._debug(
+                f"Decision Node at depth {depth}: {node.type}, {weight}")
             return [node.type, weight]
         elif isinstance(node, RandomNode.RandomNode) or isinstance(node, BaseNode.BaseNode):
             options = list()
             for child in node.get_children():
                 options.append(self._expectminimax(child, depth+1))
-            maxNode = max(options, key=lambda x: x[1])
-            print(f"Random Node at depth {depth}: {maxNode[0]}, {maxNode[1]}")
-            return maxNode
+            max_node = max(options, key=lambda x: x[1])
+            self._debug(
+                f"Random Node at depth {depth}: {max_node[0]}, {max_node[1]}")
+            return max_node
 
         # This case shouldn't happen, but just have a fallback in case.
         self._debug("Fallback case")
