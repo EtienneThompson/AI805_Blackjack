@@ -1,6 +1,7 @@
 import random
 from BaseAgent import BaseAgent
 import Enums
+import card_methods
 
 
 class GavenAgent(BaseAgent):
@@ -10,7 +11,7 @@ class GavenAgent(BaseAgent):
         actions = [Enums.AgentStates.HIT, Enums.AgentStates.STAND]
         if self._bet * 2 <= self._chips:  # Check if the agent has enough chips to double down
             actions.append(Enums.AgentStates.DOUBLE_DOWN)
-        if self.can_split(hand):
+        if card_methods.can_split_hand(self._hands[hand]):
             actions.append(Enums.AgentStates.SPLIT)
 
         self._statuses[hand] = random.choice(actions)
