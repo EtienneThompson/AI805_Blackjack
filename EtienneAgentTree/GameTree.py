@@ -14,6 +14,8 @@ class GameTree:
         self.root = BaseNode.BaseNode(self._cards)
         self.generate_game_tree(self.root, 0)
 
+        self.traversed_nodes = 0
+
     def generate_game_tree(self, node, depth):
         """Recursively generate the game tree from the current state."""
         if depth >= self.max_depth:
@@ -42,8 +44,8 @@ class GameTree:
 
             if node.get_hand_value() < 21:
                 for rank in possible_ranks:
-                    self._debug(
-                        f"node type: {node.type} - is final decision: {node.is_final_decision()}")
+                    # self._debug(
+                    #     f"node type: {node.type} - is final decision: {node.is_final_decision()}")
                     random = RandomNode.RandomNode(
                         node.get_cards(), rank + "♥", 1 / 13, node.is_final_decision())
                     node.add_child(random)
@@ -77,19 +79,22 @@ class GameTree:
 
     def make_decision(self):
         """Wrapper method for expeci-minimax algorithm method."""
-        return self._expectminimax(self.root, 0)
+        decision, weight = self._expectminimax(self.root, 0)
+        print(f"Expectiminimax traversed {self.traversed_nodes} nodes")
+        return [decision, weight]
 
     def _expectminimax(self, node, depth):
+        self.traversed_nodes += 1
         """Recursively computes the best move given the game tree rooted at node."""
         if len(node.get_children()) == 0:
             if isinstance(node, DecisionNode.DecisionNode):
-                self._debug(
-                    f"Decision node leaf at depth {depth}: {node.type}, {node.get_node_weight()}")
+                # self._debug(
+                #     f"Decision node leaf at depth {depth}: {node.type}, {node.get_node_weight()}")
                 return [node.type, node.get_node_weight()]
             elif isinstance(node, RandomNode.RandomNode):
                 # Since it's a random node, the decision will be made in the parent node.
-                self._debug(
-                    f"Random node leaf at depth {depth}: \"\", is_final_chance node: {node.is_final_chance()}, {node.get_node_weight(reverse_weight=node.is_final_chance())}, card: {node.get_cards()}")
+                # self._debug(
+                #     f"Random node leaf at depth {depth}: \"\", is_final_chance node: {node.is_final_chance()}, {node.get_node_weight(reverse_weight=node.is_final_chance())}, card: {node.get_cards()}")
                 return ["", node.get_node_weight(reverse_weight=node.is_final_chance())]
             else:
                 # This happens when we have no decision tree because we have a 21
@@ -98,25 +103,25 @@ class GameTree:
 
         if isinstance(node, DecisionNode.DecisionNode):
             weight = 0
-            self._debug(
-                f"Checking weight for decision node at depth {depth}: {node.type}")
+            # self._debug(
+            #     f"Checking weight for decision node at depth {depth}: {node.type}")
             for child in node.get_children():
                 _, value = self._expectminimax(child, depth+1)
                 weight += child.probability * value
-            self._debug(
-                f"Decision Node at depth {depth}: {node.type}, {weight}")
+            # self._debug(
+            #     f"Decision Node at depth {depth}: {node.type}, {weight}")
             return [node.type, weight]
         elif isinstance(node, RandomNode.RandomNode) or isinstance(node, BaseNode.BaseNode):
             options = list()
             for child in node.get_children():
                 options.append(self._expectminimax(child, depth+1))
             max_node = max(options, key=lambda x: x[1])
-            self._debug(
-                f"Random Node at depth {depth}: {max_node[0]}, {max_node[1]}")
+            # self._debug(
+            #     f"Random Node at depth {depth}: {max_node[0]}, {max_node[1]}")
             return max_node
 
         # This case shouldn't happen, but just have a fallback in case.
-        self._debug("Fallback case")
+        # self._debug("Fallback case")
         return ["", node.get_node_weight()]
 
     def _generate_output_for_node(self, node, output, depth):
