@@ -72,6 +72,7 @@ class BaseAgent:
                 self._hands[new_hand_index].append(self._hands[index].pop())
                 self._hands[index].append(new_card_1)
                 self._hands[new_hand_index].append(new_card_2)
+                break
 
     def debug(self, data):
         if self._debug:

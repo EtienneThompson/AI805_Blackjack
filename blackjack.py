@@ -238,7 +238,7 @@ def handle_agent_choice(choice, agent, hand):
         agent.add_card_to_hand(new_card, hand)
         # Update the agent's status if needed
         # (You'll need to implement the `calculate_hand_value` function)
-        if card_methods.calculate_hand_value(agent.get_hand()) > 21:
+        if card_methods.calculate_hand_value(agent.get_hand(hand)) > 21:
             agent.set_status(Enums.AgentStates.BUST, hand)
     elif choice == Enums.AgentStates.STAND:
         agent.set_status(Enums.AgentStates.STAND, hand)

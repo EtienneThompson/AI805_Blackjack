@@ -42,7 +42,16 @@ class GameTree:
             # Chance tree node
             # self._debug("Adding random nodes...")
 
-            if node.get_hand_value() < 21:
+            if node.get_hand_value() and node.type == "SPLIT":
+                # Specially handle split nodes by creating twice as many random nodes,
+                # one set each for the two resulting hands.
+                for i in range(2):
+                    self._debug(f"Handling hand {i} for a split node")
+                    for rank in possible_ranks:
+                        random = RandomNode.RandomNode(
+                            [node.get_cards()[i]], rank + "♥", 1 / 26, node.is_final_decision())
+                        node.add_child(random)
+            elif node.get_hand_value() < 21:
                 for rank in possible_ranks:
                     # self._debug(
                     #     f"node type: {node.type} - is final decision: {node.is_final_decision()}")
