@@ -31,3 +31,10 @@ def calculate_hand_value(hand):
         value -= 10
         aces -= 1
     return value
+
+
+def can_split_hand(hand):
+    """Determines if splitting is a viable move for the given hand."""
+    if len(hand) == 2 and hand[0][:-1] == hand[1][:-1]:
+        return True
+    return False

@@ -9,9 +9,8 @@ class DecisionNode(BaseNode.BaseNode):
         super().__init__(hand)
         self.type = node_type
 
-    def can_have_chance_nodes(self):
-        """Determines if the node can have chance nodes."""
-        return self.type == "HIT" or self.type == "DOUBLE_DOWN" or self.type == "SPLIT"
+    def is_final_decision(self):
+        return self.type == "DOUBLE_DOWN" or self.type == "STAND"
 
     def __str__(self):
         return "Decision " + self.type + " " + str(self.get_cards())
