@@ -62,7 +62,7 @@ class GameTree:
                 # Specially handle split nodes by creating twice as many random nodes,
                 # one set each for the two resulting hands.
                 for i in range(2):
-                    self._debug(f"Handling hand {i} for a split node")
+                    # self._debug(f"Handling hand {i} for a split node")
                     for rank in possible_ranks:
                         random_node = RandomNode.RandomNode(
                             [node.get_cards()[i]], rank + "♥", 1 / 26, node.is_final_decision())
@@ -129,22 +129,22 @@ class GameTree:
 
         if isinstance(node, DecisionNode.DecisionNode):
             weight = 0
-            self._debug(
-                f"Checking weight for decision node at depth {depth}: {node.type}")
+            # self._debug(
+            #     f"Checking weight for decision node at depth {depth}: {node.type}")
             for child in node.get_children():
                 _, value = self._expectminimax(child, depth+1)
                 weight += child.probability * value
-            self._debug(
-                f"Decision Node at depth {depth}: {node.type}, {weight}")
+            # self._debug(
+            #     f"Decision Node at depth {depth}: {node.type}, {weight}")
             return [node.type, weight]
         elif isinstance(node, RandomNode.RandomNode) or isinstance(node, BaseNode.BaseNode):
             options = list()
-            self._debug(f"Checking weight for random node at depth {depth}")
+            # self._debug(f"Checking weight for random node at depth {depth}")
             for child in node.get_children():
                 options.append(self._expectminimax(child, depth+1))
             max_node = max(options, key=lambda x: x[1])
-            self._debug(
-                f"Random Node at depth {depth}: {max_node[0]}, {max_node[1]}")
+            # self._debug(
+            #     f"Random Node at depth {depth}: {max_node[0]}, {max_node[1]}")
             return max_node
 
         # This case shouldn't happen, but just have a fallback in case.
