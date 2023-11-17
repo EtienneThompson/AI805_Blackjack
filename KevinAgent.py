@@ -18,9 +18,11 @@ class KevinAgent(BaseAgent):
         self.q_table = defaultdict(lambda: defaultdict(float)) #Initialize Q-table 
         self.alpha = 0.1 # learning rate
         self.gamma = 0.9 # discount factor  
+        self.epsilon = 1.0
+        self.display_q_table = True 
     
     ######### Set Policy #####################  
-    def epsilon_greedy_policy(self, state, epsilon=0.1):
+    def epsilon_greedy_policy(self, state):
         if random.random() < epsilon: #The vaule of epsilon is between 0 and 1. 
             return random.choice([Enums.AgentStates.HIT, Enums.AgentStates.STAND, Enums.AgentStates.DOUBLE_DOWN, Enums.AgentStates.SPLIT])
         else: #in this case the agent will try to exploit what it has learned so far
@@ -54,6 +56,11 @@ class KevinAgent(BaseAgent):
                 print(f"  Action {action}: {value}")
             print()
     
+    def get_current_state(self,hand):
+        hand_value = card_methods.calculate_hand_value(self._hands[hand])
+        has_ace = any(card[:-1] == "A" for card in self._hands[hand]) # Indicate whether the hand is a "soft hand" which means having an Ace that can be considered as 11. 
+        return (hand_value, has_ace)
+    
     #This is the reward handling part 
     def get_reward(self, outcome):
         if outcome == "win":
@@ -67,11 +74,6 @@ class KevinAgent(BaseAgent):
         reward = self.get_reward(outcome)
         current_state = self.get_current_state() 
         self.learn(current_state, action, reward, next_state)
-    
-    def get_current_state(self,hand):
-        hand_value = card_methods.calculate_hand_value(self._hands[hand])
-        has_ace = any(card[:-1] == "A" for card in self._hands[hand]) # Indicate whether the hand is a "soft hand" which means having an Ace that can be considered as 11. 
-        return (hand_value, has_ace)
 
     def place_bet(self, hand):  # this is new betting function
         """Decide how much to bet based on the current hand."""
