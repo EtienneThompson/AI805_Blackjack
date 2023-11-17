@@ -39,6 +39,25 @@ class KevinAgent(BaseAgent):
         new_value = (1 - self.alpha) * old_value + self.alpha * (reward + self.gamma * next_max)
         # Discount factor which determines importance of future rewards. 
         self.q_table[state][action] = new_value
+    
+    #This is the reward handling part 
+    def get_reward(self, outcome):
+        if outcome == "win":
+            return 1
+        elif outcome == "lose":
+            return -1 
+        else: # For draw or anything else. 
+            return 0 
+    
+    def update_after_action(self, action, outcome, next_state):
+        reward = self.get_reward(outcome)
+        current_state = self.get_current_state() 
+        self.learn(current_state, action, reward, next_state)
+    
+    def get_current_state(self,hand):
+        hand_value = card_methods.calculate_hand_value(self._hands[hand])
+        has_ace = any(card[:-1] == "A" for card in self._hands[hand]) # Indicate whether the hand is a "soft hand" which means having an Ace that can be considered as 11. 
+        return (hand_value, has_ace)
 
     def place_bet(self, hand):  # this is new betting function
         """Decide how much to bet based on the current hand."""
