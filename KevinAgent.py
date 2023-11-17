@@ -2,6 +2,7 @@ import random
 from BaseAgent import BaseAgent
 import Enums
 import card_methods
+from collections import defaultdict
 
 
 class KevinAgent(BaseAgent):
@@ -9,14 +10,14 @@ class KevinAgent(BaseAgent):
     EPSILON_DECAY = 0.99  # Decay factor for exploration rate. To reduce agent's exploration rate
     MIN_EPSILON = 0.1  # Minimum exploration rate. Minimum value that epsilon can decrease to. 
     
-    ######### Initialize Q-Table ############# 
-    def __init__(self):
-        super().__init__()
+    ######### Initialize Q-Table #############  
+    def __init__(self,name, is_debug):
+        super().__init__(name,is_debug)
         # existing initialization code
         # missing key will have default value of 0.0. This is to avoid KeyError when accessing a qdict with a key that don't exist
-        self.q_table = qdick(lambda: qdict(float))
+        self.q_table = defaultdict(lambda: defaultdict(float)) #Initialize Q-table 
         self.alpha = 0.1 # learning rate
-        self.gamma = 0.9 # discount factor 
+        self.gamma = 0.9 # discount factor  
     
     ######### Set Policy #####################  
     def epsilon_greedy_policy(self, state, epsilon=0.1):
