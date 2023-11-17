@@ -35,10 +35,24 @@ class KevinAgent(BaseAgent):
         # Q-Learning formula
         # new Q-value is the weighted sum of the old value and the learned value. 
         # The learned value is immediate reward plus the discounted maximum future reward. 
-        #This part calculates the learning rate. 
+        # This part calculates the learning rate. 
+        # This is also the part of Bellmen Equation in the Q-Learning 
+        # Q(s,a) = (1-α) x Q(s,a) + α x (r x γ*max*Q(s',a'))
+        
         new_value = (1 - self.alpha) * old_value + self.alpha * (reward + self.gamma * next_max)
         # Discount factor which determines importance of future rewards. 
         self.q_table[state][action] = new_value
+        
+        if self.display_q_table:
+            self.print_q_table()
+    
+    def print_q_table(self):
+        print("Current Q-table:")
+        for state, action in self.q_table.items():
+            print(f"State {state}:")
+            for action, value in actions.items():
+                print(f"  Action {action}: {value}")
+            print()
     
     #This is the reward handling part 
     def get_reward(self, outcome):
