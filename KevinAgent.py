@@ -91,15 +91,10 @@ class KevinAgent(BaseAgent):
         # At the start of the round the Agent decides how much to bet.
         self._bet = self.place_bet(hand)
         self._chips -= self._bet  # The agent deducts the bet amount from their total chips
-
-        actions = [Enums.AgentStates.HIT, Enums.AgentStates.STAND]
-        if self._bet * 2 <= self._chips:  # Check if the agent has enough chips to double down
-            actions.append(Enums.AgentStates.DOUBLE_DOWN)
-        if card_methods.can_split_hand(self._hands[hand]):
-            actions.append(Enums.AgentStates.SPLIT)
-
-        # The agent selects one of the possible actions and sets it as their current status.
-        self._statuses[hand] = random.choice(actions)
+        
+        current_state = self.get_current_state(hand)
+        action = self.epsilon_greedy_policy(current_state)
+        self._statuses[hand] = action
 
         if self._statuses[hand] == Enums.AgentStates.DOUBLE_DOWN:
             self._bet *= 2  # Double the bet
