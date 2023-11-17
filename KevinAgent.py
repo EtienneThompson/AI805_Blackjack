@@ -23,7 +23,7 @@ class KevinAgent(BaseAgent):
     
     ######### Set Policy #####################  
     def epsilon_greedy_policy(self, state):
-        if random.random() < epsilon: #The vaule of epsilon is between 0 and 1. 
+        if random.random() < self.epsilon: #The vaule of epsilon is between 0 and 1. 
             return random.choice([Enums.AgentStates.HIT, Enums.AgentStates.STAND, Enums.AgentStates.DOUBLE_DOWN, Enums.AgentStates.SPLIT])
         else: #in this case the agent will try to exploit what it has learned so far
             # Return the action with the highest Q-Value for the current state
