@@ -303,12 +303,13 @@ def run_full_game():
         if isinstance(player, KevinAgent):
             # Update epsilon for exploration/exploitation balance
             player.epsilon = max(player.MIN_EPSILON, player.epsilon * player.EPSILON_DECAY)
+            player.print_q_table()
 
     run_turn_for_agent(dealer, dealer, players) # Point where to feed Q-learning. 
+    print_table(dealer, *players, is_dealer_turn=True)
     
     for player in players:
         if isinstance(player, KevinAgent): # Loop through each player and make sure it gets applied to KevinAgent only 
-            player.print_q_table()
             for i in range(player.get_number_of_hands()): # iterate over each hand of KevinAgent 
                 next_state = player.get_current_state(i)  # determine next state
                 if card_methods.calculate_hand_value(player.get_hand(i)) > 21: # If the player hand value exceed 21 (bust)
