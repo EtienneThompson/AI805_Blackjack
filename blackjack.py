@@ -197,7 +197,7 @@ def calculate_max_widths(dealer, *agents):
     return max_name + 2, max_chips + 2, max_hand + 2, max_bet + 2, max_status + 2
 
 
-def print_table(dealer, *agents, is_dealer_turn):
+def print_table(dealer, *agents, is_dealer_turn, q_table=None):
     """Print table data of each player and dealer"""
     max_name_width, max_chips_width, max_hand_width, max_bet_width, max_status_width = calculate_max_widths(
         dealer, *agents)
@@ -229,7 +229,14 @@ def print_table(dealer, *agents, is_dealer_turn):
                   max_hand_width) + " ", max_hand_width) + "|" + formatted_column(" " + formatted_dollar(agent.get_bet()) + " ", max_bet_width) + "|" + formatted_column(" " + agent.get_agent_status(i) + " ", max_status_width) + "|")
 
     debug(sep_line)
-
+    
+    if q_table is not None:
+        print("\nQ-table for KevinAgent:")
+        for state, actions in sorted(q_table.items()):
+            print(f"State {state}:")
+            for action, value in sorted(actions.items()):
+                print(f"   Action {action}: {value: .2f}")
+        print()        
 
 def handle_agent_choice(choice, agent, hand):
     """Handle agent's choice"""
@@ -301,6 +308,7 @@ def run_full_game():
     
     for player in players:
         if isinstance(player, KevinAgent): # Loop through each player and make sure it gets applied to KevinAgent only 
+            player.print_q_table()
             for i in range(player.get_number_of_hands()): # iterate over each hand of KevinAgent 
                 next_state = player.get_current_state(i)  # determine next state
                 if card_methods.calculate_hand_value(player.get_hand(i)) > 21: # If the player hand value exceed 21 (bust)
