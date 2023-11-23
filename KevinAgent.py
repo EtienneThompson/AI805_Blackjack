@@ -52,7 +52,7 @@ class KevinAgent(BaseAgent):
         print("Current Q-table:")
         for state, action in self.q_table.items():
             print(f"State {state}:")
-            for action, value in actions.items():
+            for action, value in action.items():
                 print(f"  Action {action}: {value}")
             print()
     

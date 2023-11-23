@@ -294,7 +294,7 @@ def run_full_game():
     for player in players:
         run_turn_for_agent(player, dealer, players)
 
-    run_turn_for_agent(dealer, dealer, players)
+    run_turn_for_agent(dealer, dealer, players) # Point where to feed Q-learning. 
 
     print_table(dealer, *players, is_dealer_turn=True)
 
