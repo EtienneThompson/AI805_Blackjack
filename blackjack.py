@@ -306,7 +306,6 @@ def run_full_game():
             player.print_q_table()
 
     run_turn_for_agent(dealer, dealer, players) # Point where to feed Q-learning. 
-    print_table(dealer, *players, is_dealer_turn=True)
     
     for player in players:
         if isinstance(player, KevinAgent): # Loop through each player and make sure it gets applied to KevinAgent only 
