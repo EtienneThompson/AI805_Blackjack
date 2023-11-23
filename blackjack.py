@@ -313,7 +313,7 @@ def run_full_game():
                     outcome = "lose"
                 else:
                     outcome = "draw" # player and dealer hand vaule equal 
-                player.update_after_action(player._statuses[i], outcome, next_state) # Updates Q-Table on KevinAgent 
+                player.update_after_action(player._statuses[i], outcome, next_state, i) # Updates Q-Table on KevinAgent 
 
     print_table(dealer, *players, is_dealer_turn=True)
 
