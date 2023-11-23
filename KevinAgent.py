@@ -45,7 +45,8 @@ class KevinAgent(BaseAgent):
         # Discount factor which determines importance of future rewards. 
         self.q_table[state][action] = new_value
         
-        self.print_q_table()
+        if self.display_q_table:
+            self.print_q_table()
     
     def print_q_table(self):
         print("\nCurrent Q-table:")
