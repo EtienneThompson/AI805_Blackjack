@@ -72,7 +72,7 @@ class KevinAgent(BaseAgent):
     
     def update_after_action(self, action, outcome, next_state): # This is where Q-Table data being fed from blackjack class 
         reward = self.get_reward(outcome)
-        current_state = self.get_current_state() 
+        current_state = self.get_current_state(hand) 
         self.learn(current_state, action, reward, next_state)
 
     def place_bet(self, hand):  # this is new betting function
