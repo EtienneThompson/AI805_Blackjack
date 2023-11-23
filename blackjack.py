@@ -303,7 +303,7 @@ def run_full_game():
         if isinstance(player, KevinAgent):
             # Update epsilon for exploration/exploitation balance
             player.epsilon = max(player.MIN_EPSILON, player.epsilon * player.EPSILON_DECAY)
-            player.print_q_table()
+            player.print_q_table() # prints Q-table
 
     run_turn_for_agent(dealer, dealer, players) # Point where to feed Q-learning. 
     
