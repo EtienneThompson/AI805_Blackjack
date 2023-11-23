@@ -48,12 +48,12 @@ class KevinAgent(BaseAgent):
         if self.display_q_table:
             self.print_q_table()
     
-    def print_q_table(self):
-        print("\nCurrent Q-table:")
-        for state, action in self.q_table.items():
-            print(f"State {state}:")
-            for action, value in action.items():
-                print(f"  Action {action}: {value:.2f}")
+    def print_q_table(self): # check if Q-Table empty or not 
+        print("\nCurrent Q-table:") # print if Q-Table not empty 
+        for state, action in self.q_table.items(): # loop through Q-table which are key, value pairs. States are printed in consistent order.
+            print(f"State {state}:") # Prints current situation the agent is in. 
+            for action, value in action.items(): # loop over the items in the actions dictionary
+                print(f"  Action {action}: {value:.2f}") # prints action identifier and it's Q-value. 
             print()
     
     def get_current_state(self,hand):

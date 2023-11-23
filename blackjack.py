@@ -230,12 +230,12 @@ def print_table(dealer, *agents, is_dealer_turn, q_table=None):
 
     debug(sep_line)
     
-    if q_table is not None:
-        print("\nQ-table for KevinAgent:")
-        for state, actions in sorted(q_table.items()):
-            print(f"State {state}:")
-            for action, value in sorted(actions.items()):
-                print(f"   Action {action}: {value: .2f}")
+    if q_table is not None: # check if Q-Table empty or not 
+        print("\nQ-table for KevinAgent:") # print if Q-Table not empty 
+        for state, actions in sorted(q_table.items()): # loop through Q-table which are key, value pairs. States are printed in consistent order. 
+            print(f"State {state}:")  # Prints current situation the agent is in. 
+            for action, value in sorted(actions.items()): # loop over the items in the actions dictionary
+                print(f"   Action {action}: {value: .2f}") # prints action identifier and it's Q-value. 
         print()        
 
 def handle_agent_choice(choice, agent, hand):
