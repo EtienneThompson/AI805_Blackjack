@@ -12,6 +12,8 @@ SUITS = ["♥", "♦", "♠", "♣"]
 RANKS = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"]
 IS_DEBUG = False
 
+AGENTS = list()
+
 
 def debug(data):
     """Prints to console only if the game is running in debug mode."""
@@ -272,14 +274,6 @@ def run_full_game():
     """Run each player's turn and the dealer"""
     debug("Starting a new game")
     dealer = Dealer("Dealer", IS_DEBUG)
-    players = [
-        EtienneAgent("Etienne Agent 1", IS_DEBUG),
-        GavenAgent("Gaven Agent 1", IS_DEBUG),
-        KevinAgent("Kevin Agent 1", IS_DEBUG),
-        EtienneAgent("Etienne Agent 2", IS_DEBUG),
-        GavenAgent("Gaven Agent 2", IS_DEBUG),
-        KevinAgent("Kevin Agent 2", IS_DEBUG)
-    ]
 
     debug("Initializing deck of cards")
     global CARDS
@@ -289,14 +283,17 @@ def run_full_game():
     shuffle_cards()
 
     debug("Dealing out initial cards")
-    deal_cards(dealer, *players)
+    deal_cards(dealer, *AGENTS)
 
-    for player in players:
-        run_turn_for_agent(player, dealer, players)
+    for player in AGENTS:
+        run_turn_for_agent(player, dealer, AGENTS)
 
-    run_turn_for_agent(dealer, dealer, players)
+    run_turn_for_agent(dealer, dealer, AGENTS)
 
-    print_table(dealer, *players, is_dealer_turn=True)
+    print_table(dealer, *AGENTS, is_dealer_turn=True)
+    
+    for player in AGENTS:
+        player.reset_after_round()
 
     debug("Ending game")
 
@@ -318,6 +315,16 @@ def main():
         print("Your input of " + mode +
               " is not a valid option. Please try again with a valid mode.")
         exit(1)
+
+    global AGENTS
+    AGENTS = [
+        EtienneAgent("Etienne Agent 1", IS_DEBUG),
+        GavenAgent("Gaven Agent 1", IS_DEBUG),
+        KevinAgent("Kevin Agent 1", IS_DEBUG),
+        EtienneAgent("Etienne Agent 2", IS_DEBUG),
+        GavenAgent("Gaven Agent 2", IS_DEBUG),
+        KevinAgent("Kevin Agent 2", IS_DEBUG)
+    ]
 
     while not requested_exit:
         run_full_game()

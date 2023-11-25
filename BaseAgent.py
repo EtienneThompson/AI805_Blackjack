@@ -74,6 +74,13 @@ class BaseAgent:
                 self._hands[new_hand_index].append(new_card_2)
                 break
 
+    def reset_after_round(self):
+        self._hands = list()
+        self._hands.append(list())
+        self._statuses = [Enums.AgentStates.ACTIVE]
+        self._bet = 0
+        self._is_split = False
+
     def debug(self, data):
         if self._debug:
             print(data)
