@@ -5,11 +5,23 @@ import Enums
 
 
 class EtienneAgent(BaseAgent):
+    def place_bet(self):
+        bet_value = 0
+        if self._chips >= 2000:
+            bet_value = 200
+            self._bets.append(bet_value)
+        elif self._chips > 1000:
+            bet_value = 100
+        else:
+            bet_value = min(self._chips, 50)
+
+        self._bets.append(bet_value)
+        self._chips -= bet_value
+
     """
     Runs an expecti-minimax algorithm to determine an optimal move given the
     agent's current hand and knowledge of the game.
     """
-
     def run_agent(self, hand):
         """
         Constructs a game tree with random nodes, and runs the expect-minimax

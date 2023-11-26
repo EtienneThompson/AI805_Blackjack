@@ -180,7 +180,7 @@ def calculate_max_widths(dealer, *agents):
 
     # For Bet Column
     max_bet_label = len(" BET ")
-    max_bet_content = max([formatted_dollar(agent.get_bet())
+    max_bet_content = max([formatted_dollar(agent.get_bet(i))
                           for agent in agents] + ["$0"], key=len)
     max_bet = max(max_bet_label, len(max_bet_content) + 2)
 
@@ -228,7 +228,7 @@ def print_table(dealer, *agents, is_dealer_turn):
     for agent in agents:
         for i in range(0, agent.get_number_of_hands()):
             debug("|" + formatted_column(" " + agent.get_name() + " ", max_name_width) + "|" + formatted_column(" " + formatted_dollar(agent.get_chips()) + " ", max_chips_width) + "|" + formatted_column(" " + formatted_cards(agent.get_hand(i),
-                  max_hand_width) + " ", max_hand_width) + "|" + formatted_column(" " + formatted_dollar(agent.get_bet()) + " ", max_bet_width) + "|" + formatted_column(" " + agent.get_agent_status(i) + " ", max_status_width) + "|")
+                  max_hand_width) + " ", max_hand_width) + "|" + formatted_column(" " + formatted_dollar(agent.get_bet(i)) + " ", max_bet_width) + "|" + formatted_column(" " + agent.get_agent_status(i) + " ", max_status_width) + "|")
 
     debug(sep_line)
 
@@ -247,8 +247,8 @@ def handle_agent_choice(choice, agent, hand):
     elif choice == Enums.AgentStates.DOUBLE_DOWN:
         new_card = CARDS.pop()
         agent.add_card_to_hand(new_card, hand)
-        agent._bet *= 2  # Double the bet
-        agent._chips -= agent._bet  # Update the chips
+        agent._chips -= agent._bets[hand]  # Update the chips
+        agent._bets[hand] *= 2  # Double the bet
     elif choice == Enums.AgentStates.SPLIT:
         new_card_1 = CARDS.pop()
         new_card_2 = CARDS.pop()
@@ -270,6 +270,31 @@ def run_turn_for_agent(agent, dealer, all_players):
             handle_agent_choice(choice, agent, i)
 
 
+def handle_scoring(dealer, player):
+    dealer_hand = card_methods.calculate_hand_value(dealer.get_hand())
+    for i in range(player.get_number_of_hands()):
+        player_hand = card_methods.calculate_hand_value(player.get_hand(i))
+        if player_hand == 21 and dealer_hand != 21 and len(player.get_hand(i)) == 2:
+            # Get your bet back plus earn 1.5 times your bet.
+            won_chips = player.get_bet(i) * 2.5
+            debug(f"player {player.get_name()} won with blackjack, winning {won_chips}")
+            player.earn_chips(won_chips)
+        elif dealer_hand > 21 and player_hand <= 21:
+            # The player wins, return chips to the player.
+            won_chips = player.get_bet(i) * 2
+            debug(f"player {player.get_name()} winning {won_chips}")
+            player.earn_chips(won_chips)
+        elif dealer_hand < player_hand and player_hand <= 21:
+            # The player wins, return chips to the player.
+            won_chips = player.get_bet(i) * 2
+            debug(f"player {player.get_name()} winning {won_chips}")
+            player.earn_chips(won_chips)
+        elif dealer_hand == player_hand:
+            won_chips = player.get_bet(i)
+            debug(f"player {player.get_name()} tied, getting bet back")
+            player.earn_chips(won_chips)
+
+
 def run_full_game():
     """Run each player's turn and the dealer"""
     debug("Starting a new game")
@@ -282,6 +307,9 @@ def run_full_game():
     debug("Shuffling deck of cards")
     shuffle_cards()
 
+    for player in AGENTS:
+        player.place_bet()
+
     debug("Dealing out initial cards")
     deal_cards(dealer, *AGENTS)
 
@@ -289,6 +317,9 @@ def run_full_game():
         run_turn_for_agent(player, dealer, AGENTS)
 
     run_turn_for_agent(dealer, dealer, AGENTS)
+
+    for player in AGENTS:
+        handle_scoring(dealer, player)
 
     print_table(dealer, *AGENTS, is_dealer_turn=True)
     
@@ -301,7 +332,7 @@ def run_full_game():
 def main():
     requested_exit = False
     simulation_iterations = 0
-    max_simulation_iterations = 1000
+    max_simulation_iterations = 10
 
     print("Do you want to run in debug or simulation mode?")
     mode = input("Type 1 for debug, 2 for simulation\n")
@@ -334,6 +365,11 @@ def main():
               str(max_simulation_iterations) + " iterations.")
         print(str(100 * (simulation_iterations /
               max_simulation_iterations)) + "% Complete")
+        
+        for agent in AGENTS:
+            print(f"Player {agent.get_name()} has {agent.get_chips()} chips")
+
+        print()
 
         wait_for_user_input()
 
