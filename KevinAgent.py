@@ -53,7 +53,7 @@ class KevinAgent(BaseAgent):
         for state, action in self.q_table.items(): # loop through Q-table which are key, value pairs. States are printed in consistent order.
             print(f"State {state}:") # Prints current situation the agent is in. 
             for action, value in action.items(): # loop over the items in the actions dictionary
-                print("TEST", f"  Action {action}: {value:.2f}") # prints action identifier and it's Q-value. 
+                print(f"  Action {action}: {value:.2f}") # prints action identifier and it's Q-value. 
             print()
     
     def get_current_state(self,hand):
