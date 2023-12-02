@@ -320,16 +320,16 @@ def run_full_game():
     debug("Dealing out initial cards")
     deal_cards(dealer, *AGENTS)
 
-    for player in players:
-        run_turn_for_agent(player, dealer, players)
+    for player in AGENTS:
+        run_turn_for_agent(player, dealer, AGENTS)
         if isinstance(player, KevinAgent):
             # Update epsilon for exploration/exploitation balance. Higer epsilon value encourages the agent to explore more. 
             player.epsilon = max(player.MIN_EPSILON, player.epsilon * player.EPSILON_DECAY) # reduces the epsilon vaule by a factor 'EPSILON_DECAY'. max() ensure epsilon does not go below 'MIN_EPSILON'
             player.print_q_table() # prints Q-table
 
-    run_turn_for_agent(dealer, dealer, players) # Point where to feed Q-learning. 
+    run_turn_for_agent(dealer, dealer, AGENTS) # Point where to feed Q-learning. 
     
-    for player in players:
+    for player in AGENTS:
         if isinstance(player, KevinAgent): # Loop through each player and make sure it gets applied to KevinAgent only 
             for i in range(player.get_number_of_hands()): # iterate over each hand of KevinAgent 
                 next_state = player.get_current_state(i)  # determine next state
