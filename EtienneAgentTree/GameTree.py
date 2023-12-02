@@ -116,12 +116,12 @@ class GameTree:
             if isinstance(node, DecisionNode.DecisionNode):
                 # self._debug(
                 #     f"Decision node leaf at depth {depth}: {node.type}, {node.get_node_weight()}")
-                return [node.type, node.get_node_weight()]
+                return [node.type, node.get_node_weight(depth)]
             elif isinstance(node, RandomNode.RandomNode):
                 # Since it's a random node, the decision will be made in the parent node.
                 # self._debug(
                 #     f"Random node leaf at depth {depth}: is_final_chance node: {node.is_stand_decision()}, {node.get_node_weight(reverse_weight=node.is_stand_decision())}, card: {node.get_cards()}")
-                return ["", node.get_node_weight(reverse_weight=node.is_stand_decision())]
+                return ["", node.get_node_weight(depth, reverse_weight=node.is_stand_decision())]
             else:
                 # This happens when we have no decision tree because we have a 21
                 # in our hand already.

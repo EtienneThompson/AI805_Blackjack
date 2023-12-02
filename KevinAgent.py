@@ -103,17 +103,9 @@ class KevinAgent(BaseAgent):
     def run_agent(self, hand):
         self.wait_for_user_input()
 
-        # At the start of the round the Agent decides how much to bet.
-        self._bet = self.place_bet_by_hand(hand)
-        self._chips -= self._bet  # The agent deducts the bet amount from their total chips
-        
         current_state = self.get_current_state(hand)
         action = self.epsilon_greedy_policy(current_state,hand)
         self._statuses[hand] = action
-
-        if self._statuses[hand] == Enums.AgentStates.DOUBLE_DOWN:
-            self._bet *= 2  # Double the bet
-            self._chips -= self._bet  # Update the chips
 
         return self._statuses[hand]
     

@@ -1,6 +1,7 @@
 """Runs a simulated game of blackjack."""
 import json
 import random
+import matplotlib.pyplot as plt
 from EtienneAgent import EtienneAgent
 from GavenAgent import GavenAgent, generate_random_genome
 from genetic_algorithm import run_genetic_algorithm, adjust_population_size, save_best_genomes, population_size, num_generations
@@ -250,8 +251,10 @@ def handle_agent_choice(choice, agent, hand):
         # (You'll need to implement the `calculate_hand_value` function)
         if card_methods.calculate_hand_value(agent.get_hand(hand)) > 21:
             agent.set_status(Enums.AgentStates.BUST, hand)
+        agent.num_hits += 1
     elif choice == Enums.AgentStates.STAND:
         agent.set_status(Enums.AgentStates.STAND, hand)
+        agent.num_stands += 1
     elif choice == Enums.AgentStates.DOUBLE_DOWN:
         # check if the hand index is within the range of _bets list
         if hand >= len(agent._bets):
@@ -263,11 +266,14 @@ def handle_agent_choice(choice, agent, hand):
         agent._chips -= agent._bets[hand]  # Update the chips
         agent._bets[hand] *= 2  # Double the bet
         agent.set_status(Enums.AgentStates.DOUBLE_DOWN, hand)
+        agent.num_double_downs += 1
     elif choice == Enums.AgentStates.SPLIT:
         new_card_1 = CARDS.pop()
         new_card_2 = CARDS.pop()
         agent.split_hand(new_card_1, new_card_2)
+        agent.num_splits += 1
     new_hand_value = card_methods.calculate_hand_value(agent.get_hand(hand))
+    agent.total_moves_made += 1
     
     new_status = agent.get_status(hand)
     debug(f"[DEBUG] Post-action: Hand Value: {new_hand_value}, Status: {new_status}")
@@ -309,22 +315,34 @@ def handle_scoring(dealer, player):
             won_chips = player.get_bet(i) * 2.5
             debug(f"player {player.get_name()} won with blackjack, winning {won_chips}")
             player.earn_chips(won_chips)
+            player.num_blackjacks += 1
+            player.num_wins += 1
         elif dealer_hand > 21 and player_hand <= 21:
             # The player wins, return chips to the player.
             won_chips = player.get_bet(i) * 2
             debug(f"player {player.get_name()} winning {won_chips}")
             player.earn_chips(won_chips)
+            player.num_wins += 1
         elif dealer_hand < player_hand and player_hand <= 21:
             # The player wins, return chips to the player.
             won_chips = player.get_bet(i) * 2
             debug(f"player {player.get_name()} winning {won_chips}")
             player.earn_chips(won_chips)
+            player.num_wins += 1
         elif dealer_hand == player_hand:
             # In case of a tie, get the bet back.
             won_chips = player.get_bet(i)
             debug(f"player {player.get_name()} tied, getting bet back")
             player.earn_chips(won_chips)
+            player.num_ties += 1
+        elif player_hand >= 21:
+            player.num_busts += 1
+            player.num_losses += 1
+        else:
+            player.num_losses += 1
 
+        player.num_hands_played += 1
+        player.chips_per_round.append(player._chips)
 
 def load_genome(file_name='best_genomes.json'):
     try:
@@ -443,6 +461,25 @@ def main():
 
         if simulation_iterations == max_simulation_iterations:
             requested_exit = True
+
+    for player in AGENTS:
+        print(f"Statistics for agent {player.get_name()}")
+        print(f"Agent chips: {player._chips}, total gain: {player._chips - 10000}")
+        print(f"Agent blackjacks: {player.num_blackjacks}")
+        print(f"Agent wins: {player.num_wins}, win percentage: {(player.num_wins / player.num_hands_played) * 100}")
+        print(f"Agent ties: {player.num_ties}, tie percentage: {(player.num_ties / player.num_hands_played) * 100}")
+        print(f"Agent losses: {player.num_losses}, loss percentage: {(player.num_losses / player.num_hands_played) * 100}")
+        print(f"Agent busts: {player.num_busts}, bust percentage: {(player.num_busts / player.num_hands_played) * 100}")
+        print(f"Agent hits: {player.num_hits}, hit percentage: {(player.num_hits / player.total_moves_made) * 100}")
+        print(f"Agent double downs: {player.num_double_downs}, double down percentage: {(player.num_double_downs / player.total_moves_made) * 100}")
+        print(f"Agent splits: {player.num_splits}, splits percentage: {(player.num_splits / player.total_moves_made) * 100}")
+        print(f"Agent stands: {player.num_stands}, stand percentage: {(player.num_stands / player.total_moves_made) * 100}")
+        print()
+
+        plt.plot([i for i in range(len(player.chips_per_round))], player.chips_per_round, label=player.get_name())
+
+    plt.legend()
+    plt.show()
 
 
 if __name__ == "__main__":
