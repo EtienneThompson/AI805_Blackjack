@@ -22,11 +22,11 @@ class KevinAgent(BaseAgent):
         self.display_q_table = True 
     
     ######### Set Policy #####################  
-    def epsilon_greedy_policy(self, state):
+    def epsilon_greedy_policy(self, state, hand):
         if random.random() < self.epsilon: #The vaule of epsilon is between 0 and 1.
             # Need to put SPLIT as choice based if only can split 
             choices = [Enums.AgentStates.HIT, Enums.AgentStates.STAND, Enums.AgentStates.DOUBLE_DOWN, Enums.AgentStates.SPLIT]
-            if state.can_split(self._hands):
+            if self.can_split(hand):
                choices.append(Enums.AgentStates.SPLIT)
                return random.choice(choices)
             return random.choice([Enums.AgentStates.HIT, Enums.AgentStates.STAND, Enums.AgentStates.DOUBLE_DOWN])
@@ -99,7 +99,7 @@ class KevinAgent(BaseAgent):
         self._chips -= self._bet  # The agent deducts the bet amount from their total chips
         
         current_state = self.get_current_state(hand)
-        action = self.epsilon_greedy_policy(current_state)
+        action = self.epsilon_greedy_policy(current_state,hand)
         self._statuses[hand] = action
 
         if self._statuses[hand] == Enums.AgentStates.DOUBLE_DOWN:
