@@ -253,6 +253,11 @@ def handle_agent_choice(choice, agent, hand):
     elif choice == Enums.AgentStates.STAND:
         agent.set_status(Enums.AgentStates.STAND, hand)
     elif choice == Enums.AgentStates.DOUBLE_DOWN:
+        # check if the hand index is within the range of _bets list
+        if hand >= len(agent._bets):
+            print(f"Error: no bet found for hand {hand} of agent {agent.get_name()}. Skipping bet progressing for this hand.")
+            return # Skip future processing for this hand 
+        
         new_card = CARDS.pop()
         agent.add_card_to_hand(new_card, hand)
         agent._chips -= agent._bets[hand]  # Update the chips
