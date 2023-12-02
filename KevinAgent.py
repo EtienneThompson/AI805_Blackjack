@@ -1,9 +1,9 @@
-import random
+import random # for the Q-learning greedy policy
 from BaseAgent import BaseAgent
 import Enums
 import card_methods
-from collections import defaultdict
-
+from collections import defaultdict # for the Q-Learning. 
+import pandas as pd # for statistics data colletion. 
 
 class KevinAgent(BaseAgent):
     DEFAULT_BET = 50  # This will be the default betting amount
@@ -20,6 +20,7 @@ class KevinAgent(BaseAgent):
         self.gamma = 0.9 # discount factor  
         self.epsilon = 1.0
         self.display_q_table = True 
+        self.game_statistics =[]
     
     ######### Set Policy #####################  
     def epsilon_greedy_policy(self, state, hand):
@@ -115,3 +116,14 @@ class KevinAgent(BaseAgent):
             self._chips -= self._bet  # Update the chips
 
         return self._statuses[hand]
+    
+    def update_statistics(self, outcome, final_chip_count): # passing in the outcome and final chip count after every end of game.
+        self.game_statistics.append({
+            "Game Outcome" : outcome,
+            "Final Chip Count" : final_chip_count,
+        })
+
+def export_to_excel(agent, filename="blackjack_statistics.xlsx"): # export the result to excel file using openpyxl(Excel Writer tool on pandas library)
+    df = pd.DataFrame(agent.game_statistics)
+    with pd.ExcelWriter(filename, engine='openpyxl') as writer:
+        df.to_excel(writer, sheet_name='KevinAgent Statistics')
