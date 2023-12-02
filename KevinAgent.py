@@ -25,11 +25,11 @@ class KevinAgent(BaseAgent):
     def epsilon_greedy_policy(self, state):
         if random.random() < self.epsilon: #The vaule of epsilon is between 0 and 1.
             # Need to put SPLIT as choice based if only can split 
-            choices = [Enums.AgentsStates........]
-            if state.can_split(hand):
+            choices = [Enums.AgentStates.HIT, Enums.AgentStates.STAND, Enums.AgentStates.DOUBLE_DOWN, Enums.AgentStates.SPLIT]
+            if state.can_split(self._hands):
                choices.append(Enums.AgentStates.SPLIT)
-            return random.choice(choics)
-            return random.choice([Enums.AgentStates.HIT, Enums.AgentStates.STAND, Enums.AgentStates.DOUBLE_DOWN, Enums.AgentStates.SPLIT])
+               return random.choice(choices)
+            return random.choice([Enums.AgentStates.HIT, Enums.AgentStates.STAND, Enums.AgentStates.DOUBLE_DOWN])
         else: #in this case the agent will try to exploit what it has learned so far
             # Return the action with the highest Q-Value for the current state
             return max(self.q_table[state], key=self.q_table[state].get)
