@@ -21,6 +21,7 @@ class KevinAgent(BaseAgent):
         self.epsilon = 1.0
         self.display_q_table = True 
         self.game_statistics =[]
+        self.last_action = None # last action default value 
     
     ######### Set Policy #####################  
     def epsilon_greedy_policy(self, state, hand):
@@ -116,7 +117,13 @@ class KevinAgent(BaseAgent):
             self._statuses.extend([None] * (hand - len(self._statuses) + 1))
         
         self._statuses[hand] = action
-
+        
+        action_str = str(action)
+        if '.' in action_str:
+            self.last_action = action_str.split('.')[1]
+        else:
+            self.last_action = action_str
+        
         return action 
     
     ######## Deal with Index Out of Range Error ###########
@@ -127,13 +134,15 @@ class KevinAgent(BaseAgent):
         return str(self._statuses[hand]).split(".")[1] if self._statuses[hand] is not None else 'UNKNOWN'
     ######## Deal with Index Out of Range Error ###########
     
-    def update_statistics(self, outcome, final_chip_count): # passing in the outcome and final chip count after every end of game.
+    def update_statistics(self, outcome, final_chip_count, last_actions): # passing in the outcome and final chip count after every end of game.
+        outcome_value = 1 if outcome == "win" else 0 # Change win to 1 and lose and draw to 0 for better statistical anlaysis. 
         self.game_statistics.append({
-            "Game Outcome" : outcome,
+            "Game Outcome" : outcome_value,
             "Final Chip Count" : final_chip_count,
+            "Action from Q-value" : last_actions
         })
 
     def export_to_excel(agent, filename="C:\\BlackjackStatistics\\blackjack_statistics.xlsx"): # export the result to excel file using openpyxl(Excel Writer tool on pandas library)
         df = pd.DataFrame(agent.game_statistics)
         with pd.ExcelWriter(filename, engine='openpyxl') as writer:
-            df.to_excel(writer, sheet_name='KevinAgent Statistics')
+            df.to_excel(writer, sheet_name='KevinAgent Statistics') 
