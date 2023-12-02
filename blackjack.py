@@ -1,10 +1,11 @@
 """Runs a simulated game of blackjack."""
+import json
 import random
 from EtienneAgent import EtienneAgent
-from GavenAgent import GavenAgent
+from GavenAgent import GavenAgent, generate_random_genome
+from genetic_algorithm import run_genetic_algorithm, adjust_population_size, save_best_genomes, population_size, num_generations
 from KevinAgent import KevinAgent
 from Dealer import Dealer
-
 import Enums
 import card_methods
 
@@ -12,8 +13,7 @@ SUITS = ["♥", "♦", "♠", "♣"]
 RANKS = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"]
 IS_DEBUG = False
 
-AGENTS = list()
-
+AGENTS = []
 
 def debug(data):
     """Prints to console only if the game is running in debug mode."""
@@ -190,8 +190,8 @@ def calculate_max_widths(dealer, *agents):
     for agent in agents:
         # Need to determine max length of all hands
         for i in range(0, agent.get_number_of_hands()):
-            max_size = max([agent.get_agent_status(i)] +
-                           ['ACTIVE', dealer.get_agent_status()], key=len)
+            max_size = max([agent.get_status(i)] +
+                           ['ACTIVE', dealer.get_status()], key=len)
             max_status_content = max(len(max_size), max_status_content)
     max_status = max(max_status_label, max_status_content + 2)
 
@@ -216,7 +216,7 @@ def print_table(dealer, *agents, is_dealer_turn):
     debug("|" + formatted_column(" DEALER ", max_name_width) + "|" + formatted_column(" CHIPS ", max_chips_width) +
           "|" + formatted_column(" CARDS ", max_hand_width) + "|" + formatted_column(" STATUS ", max_status_width) + "|")
     debug("|" + formatted_column(" " + dealer.get_name() + " ", max_name_width) + "|" + formatted_column(" " + formatted_dollar(dealer.get_chips()) + " ", max_chips_width) + "|" +
-          formatted_column(" " + formatted_cards(dealer_cards, max_hand_width) + " ", max_hand_width) + "|" + formatted_column(" " + dealer.get_agent_status() + " ", max_status_width) + "|")
+          formatted_column(" " + formatted_cards(dealer_cards, max_hand_width) + " ", max_hand_width) + "|" + formatted_column(" " + dealer.get_status() + " ", max_status_width) + "|")
 
     debug(sep_line)
 
@@ -228,13 +228,14 @@ def print_table(dealer, *agents, is_dealer_turn):
     for agent in agents:
         for i in range(0, agent.get_number_of_hands()):
             debug("|" + formatted_column(" " + agent.get_name() + " ", max_name_width) + "|" + formatted_column(" " + formatted_dollar(agent.get_chips()) + " ", max_chips_width) + "|" + formatted_column(" " + formatted_cards(agent.get_hand(i),
-                  max_hand_width) + " ", max_hand_width) + "|" + formatted_column(" " + formatted_dollar(agent.get_bet(i)) + " ", max_bet_width) + "|" + formatted_column(" " + agent.get_agent_status(i) + " ", max_status_width) + "|")
+                  max_hand_width) + " ", max_hand_width) + "|" + formatted_column(" " + formatted_dollar(agent.get_bet(i)) + " ", max_bet_width) + "|" + formatted_column(" " + agent.get_status(i) + " ", max_status_width) + "|")
 
     debug(sep_line)
 
 
 def handle_agent_choice(choice, agent, hand):
     """Handle agent's choice"""
+    debug(f"[DEBUG] Handling choice for {agent.get_name()} - Hand {hand}: {choice}")
     if choice == Enums.AgentStates.HIT:
         new_card = CARDS.pop()
         agent.add_card_to_hand(new_card, hand)
@@ -249,10 +250,15 @@ def handle_agent_choice(choice, agent, hand):
         agent.add_card_to_hand(new_card, hand)
         agent._chips -= agent._bets[hand]  # Update the chips
         agent._bets[hand] *= 2  # Double the bet
+        agent.set_status(Enums.AgentStates.DOUBLE_DOWN, hand)
     elif choice == Enums.AgentStates.SPLIT:
         new_card_1 = CARDS.pop()
         new_card_2 = CARDS.pop()
         agent.split_hand(new_card_1, new_card_2)
+    new_hand_value = card_methods.calculate_hand_value(agent.get_hand(hand))
+    
+    new_status = agent.get_status(hand)
+    debug(f"[DEBUG] Post-action: Hand Value: {new_hand_value}, Status: {new_status}")
 
 
 def run_turn_for_agent(agent, dealer, all_players):
@@ -262,18 +268,30 @@ def run_turn_for_agent(agent, dealer, all_players):
         # Run a single move for each hand that is available.
         for i in range(0, agent.get_number_of_hands()):
             if agent.is_agent_hand_done(i):
+                debug(f"[DEBUG] Hand {i} for {agent.get_name()} is done.")
                 continue  # skip any already finished hands.
 
             print_table(dealer, *all_players, is_dealer_turn=(agent == dealer))
 
+            debug(f"[DEBUG] Processing hand {i} for {agent.get_name()}")
             choice = agent.run_agent(i)
             handle_agent_choice(choice, agent, i)
+            debug(f"[DEBUG] Hand {i} for {agent.get_name()} status after action: {agent.get_status(i)}")
+
+            if agent.is_agent_hand_done(i):
+                debug(f"[DEBUG] Hand {i} for {agent.get_name()} marked as done after action.")
 
 
 def handle_scoring(dealer, player):
     dealer_hand = card_methods.calculate_hand_value(dealer.get_hand())
     for i in range(player.get_number_of_hands()):
         player_hand = card_methods.calculate_hand_value(player.get_hand(i))
+        player_status = player.get_status(i)
+
+        if player_status == Enums.AgentStates.BUST:
+            # Skip the scoring for busted hands
+            continue
+
         if player_hand == 21 and dealer_hand != 21 and len(player.get_hand(i)) == 2:
             # Get your bet back plus earn 1.5 times your bet.
             won_chips = player.get_bet(i) * 2.5
@@ -290,9 +308,20 @@ def handle_scoring(dealer, player):
             debug(f"player {player.get_name()} winning {won_chips}")
             player.earn_chips(won_chips)
         elif dealer_hand == player_hand:
+            # In case of a tie, get the bet back.
             won_chips = player.get_bet(i)
             debug(f"player {player.get_name()} tied, getting bet back")
             player.earn_chips(won_chips)
+
+
+def load_genome(file_name='best_genomes.json'):
+    try:
+        with open(file_name, 'r') as f:
+            genomes = json.load(f)
+        return random.choice(genomes)
+    except FileNotFoundError:
+        # If the file does not exist, generate a random genome
+        return generate_random_genome()
 
 
 def run_full_game():
@@ -332,28 +361,34 @@ def run_full_game():
 def main():
     requested_exit = False
     simulation_iterations = 0
-    max_simulation_iterations = 10
+    max_simulation_iterations = 100
 
-    print("Do you want to run in debug or simulation mode?")
-    mode = input("Type 1 for debug, 2 for simulation\n")
+    print("Choose mode: 1 for debug, 2 for simulation, 3 for evolve")
+    mode = input()
 
     global IS_DEBUG
     if mode == "1":
         IS_DEBUG = True
     elif mode == "2":
         IS_DEBUG = False
+    elif mode == "3":
+        IS_DEBUG = False
+        adjusted_population_size = adjust_population_size(population_size)
+        final_population, final_fitness_scores = run_genetic_algorithm(adjusted_population_size, num_generations)
+        save_best_genomes(final_population, final_fitness_scores)
+        return  # Exit after evolution; or continue with further logic if needed
     else:
-        print("Your input of " + mode +
-              " is not a valid option. Please try again with a valid mode.")
-        exit(1)
+        print("Your input of " + mode + " is not a valid option. Please try again with a valid mode.")
+        return  # or 'exit(1)' if you want to close the program
 
+    # Code to initialize and run the simulation
     global AGENTS
     AGENTS = [
         EtienneAgent("Etienne Agent 1", IS_DEBUG),
-        GavenAgent("Gaven Agent 1", IS_DEBUG),
+        GavenAgent(load_genome(), "Gaven Agent 1", IS_DEBUG),
         KevinAgent("Kevin Agent 1", IS_DEBUG),
         EtienneAgent("Etienne Agent 2", IS_DEBUG),
-        GavenAgent("Gaven Agent 2", IS_DEBUG),
+        GavenAgent(load_genome(), "Gaven Agent 2", IS_DEBUG),
         KevinAgent("Kevin Agent 2", IS_DEBUG)
     ]
 
@@ -361,10 +396,8 @@ def main():
         run_full_game()
 
         simulation_iterations += 1
-        print("Completed " + str(simulation_iterations) + " out of " +
-              str(max_simulation_iterations) + " iterations.")
-        print(str(100 * (simulation_iterations /
-              max_simulation_iterations)) + "% Complete")
+        print("Completed " + str(simulation_iterations) + " out of " + str(max_simulation_iterations) + " iterations.")
+        print(str(100 * (simulation_iterations / max_simulation_iterations)) + "% Complete")
         
         for agent in AGENTS:
             print(f"Player {agent.get_name()} has {agent.get_chips()} chips")

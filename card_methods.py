@@ -1,40 +1,22 @@
 card_value_mapping = {
-    "2": 2,
-    "3": 3,
-    "4": 4,
-    "5": 5,
-    "6": 6,
-    "7": 7,
-    "8": 8,
-    "9": 9,
-    "10": 10,
-    "J": 10,
-    "Q": 10,
-    "K": 10,
+    "2": 2, "3": 3, "4": 4, "5": 5,
+    "6": 6, "7": 7, "8": 8, "9": 9,
+    "10": 10, "J": 10, "Q": 10, "K": 10, "A": 11
 }
 
-
-def calculate_hand_value(hand):
+def calculate_hand_value(hand: list) -> int:
     """Compute the hand's value, including aces."""
-    value = 0
-    aces = 0
-    for card in hand:
-        card_rank = card[:-1]  # Remove the suit
-        if card_rank in card_value_mapping.keys():
-            value += card_value_mapping[card_rank]
-        elif card_rank == "A":
-            value += 11
-            aces += 1
+    value = sum(card_value_mapping.get(card[:-1], 0) for card in hand)
+    aces = [card[:-1] for card in hand].count('A')
+    return adjust_for_aces(value, aces)
 
-    # Handle aces
+def adjust_for_aces(value: int, aces: int) -> int:
+    """Adjusts the hand value considering aces."""
     while value > 21 and aces:
         value -= 10
         aces -= 1
     return value
 
-
-def can_split_hand(hand):
+def can_split_hand(hand: list) -> bool:
     """Determines if splitting is a viable move for the given hand."""
-    if len(hand) == 2 and hand[0][:-1] == hand[1][:-1]:
-        return True
-    return False
+    return len(hand) == 2 and hand[0][:-1] == hand[1][:-1]
