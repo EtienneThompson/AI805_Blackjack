@@ -26,13 +26,21 @@ class KevinAgent(BaseAgent):
         if random.random() < self.epsilon: #The vaule of epsilon is between 0 and 1.
             # Need to put SPLIT as choice based if only can split 
             choices = [Enums.AgentStates.HIT, Enums.AgentStates.STAND, Enums.AgentStates.DOUBLE_DOWN, Enums.AgentStates.SPLIT]
-            if self.can_split(hand):
-               choices.append(Enums.AgentStates.SPLIT)
-               return random.choice(choices)
-            return random.choice([Enums.AgentStates.HIT, Enums.AgentStates.STAND, Enums.AgentStates.DOUBLE_DOWN])
+            if self.can_split(hand): # Check if true for split 
+               choices.append(Enums.AgentStates.SPLIT) # Then return SPLIT for agent state 
+            return random.choice(choices)
         else: #in this case the agent will try to exploit what it has learned so far
             # Return the action with the highest Q-Value for the current state
-            return max(self.q_table[state], key=self.q_table[state].get)
+            choices = [Enums.AgentStates.HIT, Enums.AgentStates.STAND, Enums.AgentStates.DOUBLE_DOWN, Enums.AgentStates.SPLIT]
+            if self.q_table[state]:
+                # Return the action with the highest Q-value for the current state
+                return max(self.q_table[state], key=self.q_table[state].get)
+            else:
+                # If no actions are recorded for this state in the Q-table choose randomly 
+                choices = [Enums.AgentStates.HIT, Enums.AgentStates.STAND, Enums.AgentStates.DOUBLE_DOWN, Enums.AgentStates.SPLIT]
+                if self.can_split(hand):
+                    choices.append(Enums.AgentStates.SPLIT)
+                    return random.choice(choices)
     
     ######### Learning algorithm #############
     def learn(self, state, action, reward, next_state):
