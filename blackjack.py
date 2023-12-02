@@ -386,6 +386,9 @@ def run_full_game():
     
     for player in AGENTS:
         player.reset_after_round()
+        if isinstance(player, KevinAgent):
+            player.update_statistics(outcome, player.get_chips()) # update statistics 
+            player.export_game_statistics()
 
     debug("Ending game")
 
