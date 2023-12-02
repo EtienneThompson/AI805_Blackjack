@@ -75,7 +75,7 @@ class KevinAgent(BaseAgent):
         current_state = self.get_current_state(hand) 
         self.learn(current_state, action, reward, next_state)
 
-    def place_bet(self, hand):  # this is new betting function
+    def place_bet_by_hand(self, hand):  # this is new betting function
         """Decide how much to bet based on the current hand."""
         # Check if the hand contains an Ace or a 10-value card
         if "A" in self._hands[hand] or any(card[:-1] in ["10", "J", "Q", "K"] for card in self._hands[hand]):
@@ -89,7 +89,7 @@ class KevinAgent(BaseAgent):
         self.wait_for_user_input()
 
         # At the start of the round the Agent decides how much to bet.
-        self._bet = self.place_bet(hand)
+        self._bet = self.place_bet_by_hand(hand)
         self._chips -= self._bet  # The agent deducts the bet amount from their total chips
         
         current_state = self.get_current_state(hand)

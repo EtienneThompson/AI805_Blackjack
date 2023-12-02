@@ -10,10 +10,17 @@ class BaseAgent:
         self._hands = list()
         self._hands.append(list())
         self._chips = 1000  # DO NOT CHANGE FROM 1000 CHIPS
-        self._bet = 0
+        self._bets = list()
         self._is_split = False
 
         self._debug = is_debug
+
+    def place_bet(self):
+        """Base method for placing bets. Individual agents should override this method."""
+        self._bets.append(min(self._chips, 50))
+    
+    def earn_chips(self, won_chips):
+        self._chips += won_chips
 
     def get_name(self):
         if self._is_split:
@@ -36,8 +43,10 @@ class BaseAgent:
     def get_chips(self):
         return self._chips
 
-    def get_bet(self):
-        return self._bet
+    def get_bet(self, hand=0):
+        if len(self._bets) <= hand:
+            return 0
+        return self._bets[hand]
 
     def is_agent_done(self):
         for status in self._statuses:
@@ -74,6 +83,16 @@ class BaseAgent:
                 self._hands[new_hand_index].append(self._hands[index].pop())
                 self._hands[index].append(new_card_1)
                 self._hands[new_hand_index].append(new_card_2)
+                self._bets.append(self._bets[index])
+                self._chips -= self._bets[index]
+                break
+
+    def reset_after_round(self):
+        self._hands = list()
+        self._hands.append(list())
+        self._statuses = [Enums.AgentStates.ACTIVE]
+        self._bets = list()
+        self._is_split = False
 
     def debug(self, data):
         if self._debug:
