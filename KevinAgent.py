@@ -123,7 +123,7 @@ class KevinAgent(BaseAgent):
             "Final Chip Count" : final_chip_count,
         })
 
-    def export_to_excel(agent, filename="blackjack_statistics.xlsx"): # export the result to excel file using openpyxl(Excel Writer tool on pandas library)
+    def export_to_excel(agent, filename="C:\BlackjackStatistics\blackjack_statistics.xlsx"): # export the result to excel file using openpyxl(Excel Writer tool on pandas library)
         df = pd.DataFrame(agent.game_statistics)
         with pd.ExcelWriter(filename, engine='openpyxl') as writer:
             df.to_excel(writer, sheet_name='KevinAgent Statistics')
