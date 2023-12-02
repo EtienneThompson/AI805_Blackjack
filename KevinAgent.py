@@ -103,14 +103,14 @@ class KevinAgent(BaseAgent):
     def run_agent(self, hand):
         self.wait_for_user_input()
         
-        # Check if the hand index is within the valid range 
+        # Check if the hand index is within the valid range ######## Deal with Index out of range Error 
         if hand < 0 or hand >= len(self._hands):
             raise IndexError(f"Hand index {hand} out of range for agent {self.get_name()}")
         
         current_state = self.get_current_state(hand)
         action = self.epsilon_greedy_policy(current_state,hand)
         
-        # Ensure that status list is long enought to accomodate the hand index
+        # Ensure that status list is long enought to accomodate the hand index ###### Deal with index out of range error. 
         if hand >= len(self._statuses):
             # Extend the _statuses lis with default values (None or Enum.AgentStates.ACTIVE)
             self._statuses.extend([None] * (hand - len(self._statuses) + 1))
@@ -119,12 +119,14 @@ class KevinAgent(BaseAgent):
 
         return action 
     
+    ######## Deal with Index Out of Range Error ###########
     def get_status(self, hand):
     # Ensure that the hand index is within the range before accessing it
         if hand < 0 or hand >= len(self._statuses):
             raise IndexError(f"Status index {hand} out of range for agent {self.get_name()}")
         return str(self._statuses[hand]).split(".")[1] if self._statuses[hand] is not None else 'UNKNOWN'
-
+    ######## Deal with Index Out of Range Error ###########
+    
     def update_statistics(self, outcome, final_chip_count): # passing in the outcome and final chip count after every end of game.
         self.game_statistics.append({
             "Game Outcome" : outcome,
