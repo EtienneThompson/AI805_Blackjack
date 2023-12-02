@@ -28,15 +28,15 @@ class BaseNode:
         """Computes the value of the cards in the hand."""
         return card_methods.calculate_hand_value(self._cards)
 
-    def get_node_weight(self, reverse_weight=False):
+    def get_node_weight(self, depth, reverse_weight=False):
         """Computes weight of node based on hand value"""
         hand_value = self.get_hand_value()
         if hand_value <= 21:
-            return hand_value if not reverse_weight else 0
+            return hand_value * (1 + (depth / 4)) if not reverse_weight else 0
         else:
             # Hands that have bust should not contribute to the probability of
             # a good move.
-            return 0 if not reverse_weight else (hand_value - 21) * 2
+            return 0 if not reverse_weight else ((hand_value - 21) * 2) * (1 + (depth / 4))
 
     def __str__(self):
         return "Root"

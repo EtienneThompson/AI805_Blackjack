@@ -4,7 +4,7 @@ import card_methods
 from collections import defaultdict
 
 class BaseAgent:
-    INITIAL_CHIPS = 1000  # Class constant for initial chip amount
+    INITIAL_CHIPS = 10000  # Class constant for initial chip amount
 
     def __init__(self, name: str, is_debug: bool):
         self._name = name
@@ -15,9 +15,25 @@ class BaseAgent:
         self._is_split = False
         self._debug = is_debug
 
+        self.chips_per_round = list()
+        self.num_blackjacks = 0
+        self.num_wins = 0
+        self.num_ties = 0
+        self.num_losses = 0
+        self.num_busts = 0
+        self.num_hands_played = 0
+
+        self.num_hits = 0
+        self.num_double_downs = 0
+        self.num_splits = 0
+        self.num_stands = 0
+        self.total_moves_made = 0
+
     def place_bet(self):
         """Places a bet. To be overridden in derived classes."""
-        self._bets.append(min(self._chips, 50))
+        bet_value = min(self._chips, 100)
+        self._bets.append(bet_value)
+        self._chips -= bet_value
     
     def earn_chips(self, won_chips: int):
         """Adds the specified amount of chips to the agent's total."""

@@ -23,16 +23,14 @@ class KevinAgent(BaseAgent):
     
     ######### Set Policy #####################  
     def epsilon_greedy_policy(self, state, hand):
-        if random.random() < self.epsilon: #The vaule of epsilon is between 0 and 1.
-            # Need to put SPLIT as choice based if only can split 
-            choices = [Enums.AgentStates.HIT, Enums.AgentStates.STAND, Enums.AgentStates.DOUBLE_DOWN, Enums.AgentStates.SPLIT]
-            if self.can_split(hand):
-               choices.append(Enums.AgentStates.SPLIT)
-               return random.choice(choices)
-            return random.choice([Enums.AgentStates.HIT, Enums.AgentStates.STAND, Enums.AgentStates.DOUBLE_DOWN])
-        else: #in this case the agent will try to exploit what it has learned so far
+        choices = [Enums.AgentStates.HIT, Enums.AgentStates.STAND, Enums.AgentStates.DOUBLE_DOWN]
+        if self.q_table[state]:
             # Return the action with the highest Q-Value for the current state
             return max(self.q_table[state], key=self.q_table[state].get)
+        else:
+            if self.can_split(hand):
+                choices.append(Enums.AgentStates.SPLIT)
+            return random.choice(choices)
     
     ######### Learning algorithm #############
     def learn(self, state, action, reward, next_state):
@@ -94,16 +92,8 @@ class KevinAgent(BaseAgent):
     def run_agent(self, hand):
         self.wait_for_user_input()
 
-        # At the start of the round the Agent decides how much to bet.
-        self._bet = self.place_bet_by_hand(hand)
-        self._chips -= self._bet  # The agent deducts the bet amount from their total chips
-        
         current_state = self.get_current_state(hand)
         action = self.epsilon_greedy_policy(current_state,hand)
         self._statuses[hand] = action
-
-        if self._statuses[hand] == Enums.AgentStates.DOUBLE_DOWN:
-            self._bet *= 2  # Double the bet
-            self._chips -= self._bet  # Update the chips
 
         return self._statuses[hand]
