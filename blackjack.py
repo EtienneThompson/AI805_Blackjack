@@ -9,6 +9,7 @@ from KevinAgent import KevinAgent
 from Dealer import Dealer
 import Enums
 import card_methods
+import matplotlib.pyplot as plt
 
 SUITS = ["♥", "♦", "♠", "♣"]
 RANKS = ["2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K", "A"]
@@ -343,10 +344,23 @@ def load_genome(file_name='best_genomes.json'):
     try:
         with open(file_name, 'r') as f:
             genomes = json.load(f)
-        return random.choice(genomes)
+
+        while True:
+            selected_genome = random.choice(genomes)
+            if is_genome_complete(selected_genome):
+                return selected_genome
+            else:
+                print("Warning: Incomplete genome found. Selecting another genome.")
+
     except FileNotFoundError:
         # If the file does not exist, generate a random genome
+        print("File not found. Generating a random genome.")
         return generate_random_genome()
+    
+
+def is_genome_complete(genome):
+    expected_hand_values = range(4, 22)  # Hand values from 4 to 21
+    return all(str(hand_value) in genome for hand_value in expected_hand_values)
 
 
 def run_full_game():
@@ -419,8 +433,19 @@ def main():
     elif mode == "3":
         IS_DEBUG = False
         adjusted_population_size = adjust_population_size(population_size)
-        final_population, final_fitness_scores = run_genetic_algorithm(adjusted_population_size, num_generations)
+        final_population, final_fitness_scores, avg_fitness_per_gen = run_genetic_algorithm(adjusted_population_size, num_generations)
         save_best_genomes(final_population, final_fitness_scores)
+        
+        # Plotting average fitness per generation
+        plt.figure()
+        plt.plot(avg_fitness_per_gen, marker='o')
+        plt.xlabel('Generation Number')
+        plt.ylabel('Average Generational Fitness')
+        plt.title('Average Fitness per Generation')
+        plt.grid(True)
+        plt.savefig('generation_fitness_graph.png')
+        plt.show()
+
         return  # Exit after evolution; or continue with further logic if needed
     else:
         print("Your input of " + mode + " is not a valid option. Please try again with a valid mode.")

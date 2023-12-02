@@ -25,25 +25,36 @@ class GavenAgent(BaseAgent):
 
     def run_agent(self, hand):
         hand_value = card_methods.calculate_hand_value(self._hands[hand])
-        action_probabilities = self.genome[hand_value]
-        chosen_action = self.choose_action(action_probabilities)
+        hand_value_str = str(hand_value)  # Convert to string to match JSON keys
 
-        if chosen_action == "DOUBLE_DOWN":
-            if self._chips >= self._bets[hand]:  # Ensure enough chips are available
-                self._chips -= self._bets[hand]  # Deduct additional bet amount
-                self._bets[hand] *= 2  # Double the bet
-            else:
-                print(f"[WARNING] Not enough chips for {self.get_name()} to double down. Adjusting probabilities and trying again.")
-                action_probabilities["DOUBLE_DOWN"] = 0
+        # Log the current hand value and the available strategies in the genome
+        print(f"[DEBUG] {self.get_name()} - Running agent for hand value: {hand_value_str}")
+        print(f"[DEBUG] Available strategies in genome: {self.genome.keys()}")
+
+        if hand_value_str not in self.genome:
+            print(f"[WARNING] Missing strategy for hand value: {hand_value_str} in genome for {self.get_name()}")
+            # Implement a default strategy or handle the missing key
+            chosen_action = "STAND"  # Default action if strategy is missing
+        else:
+            action_probabilities = self.genome[hand_value_str]
+            chosen_action = self.choose_action(action_probabilities)
+
+            if chosen_action == "DOUBLE_DOWN":
+                if self._chips >= self._bets[hand]:  # Ensure enough chips are available
+                    self._chips -= self._bets[hand]  # Deduct additional bet amount
+                    self._bets[hand] *= 2  # Double the bet
+                else:
+                    print(f"[WARNING] Not enough chips for {self.get_name()} to double down. Adjusting probabilities and trying again.")
+                    action_probabilities["DOUBLE_DOWN"] = 0
+                    self.normalize_probabilities(action_probabilities)
+                    chosen_action = self.choose_action(action_probabilities)
+
+            # If chosen action is SPLIT and it's not allowed, choose another action
+            while chosen_action == "SPLIT" and not self.can_split(hand):
+                print(f"[DEBUG] Hand {hand} cannot be split. Adjusting probabilities and trying again.")
+                action_probabilities["SPLIT"] = 0
                 self.normalize_probabilities(action_probabilities)
                 chosen_action = self.choose_action(action_probabilities)
-
-        # If chosen action is SPLIT and it's not allowed, choose another action
-        while chosen_action == "SPLIT" and not self.can_split(hand):
-            print(f"[DEBUG] Hand {hand} cannot be split. Adjusting probabilities and trying again.")
-            action_probabilities["SPLIT"] = 0
-            self.normalize_probabilities(action_probabilities)
-            chosen_action = self.choose_action(action_probabilities)
 
         # Convert chosen action to corresponding Enums.AgentStates
         action_enum = Enums.AgentStates[chosen_action]
@@ -73,7 +84,7 @@ class GavenAgent(BaseAgent):
 
     def place_bet(self):
         # Example bet logic, modify as needed
-        bet_value = 100  # Sample fixed bet, can be dynamic
+        bet_value = 10  # Sample fixed bet, can be dynamic
         if self._chips >= bet_value:
             self._bets.append(bet_value)
             self._chips -= bet_value
