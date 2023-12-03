@@ -4,6 +4,7 @@ import Enums
 import card_methods
 from collections import defaultdict # for the Q-Learning. 
 import pandas as pd # for statistics data colletion. 
+import os # file handling
 
 class KevinAgent(BaseAgent):
     DEFAULT_BET = 50  # This will be the default betting amount
@@ -156,7 +157,7 @@ class KevinAgent(BaseAgent):
             "Q-value" : last_q_value 
         })
 
-    def export_to_excel(self, filename="C:\\BlackjackStatistics\\blackjack_statistics.xlsx"): # export the result to excel file using openpyxl(Excel Writer tool on pandas library)
+    def export_to_excel(self, filename="C:\\BlackjackStatistics\\blackjack_statistics.xlsx"):
         df = pd.DataFrame(self.game_statistics)
-        with pd.ExcelWriter(filename, engine='openpyxl', mode='a', if_sheet_exists='replace') as writer:
-            df.to_excel(writer, sheet_name=f'{self.get_name()} Statistics') 
+        with pd.ExcelWriter(filename, engine='openpyxl') as writer:
+            df.to_excel(writer, sheet_name='KevinAgent Statistics')
