@@ -419,7 +419,7 @@ def run_full_game():
     for player in AGENTS:
         player.reset_after_round()
         if isinstance(player, KevinAgent):
-            player.update_statistics(outcome, player.get_chips(), player.last_action) # update statistics of win/lose/draw, number of chips at final and player's last action by Q-table
+            player.update_statistics(outcome, player.get_chips(), player.last_action, player.last_q_value) # update statistics of win/lose/draw, number of chips at final and player's last action by Q-table
             player.export_to_excel()
 
     debug("Ending game")
