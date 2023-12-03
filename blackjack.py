@@ -257,6 +257,11 @@ def handle_agent_choice(choice, agent, hand):
         agent.set_status(Enums.AgentStates.STAND, hand)
         agent.num_stands += 1
     elif choice == Enums.AgentStates.DOUBLE_DOWN:
+        # check if the hand index is within the range of _bets list
+        if hand >= len(agent._bets):
+            print(f"Error: no bet found for hand {hand} of agent {agent.get_name()}. Skipping bet progressing for this hand.")
+            return # Skip future processing for this hand 
+        
         new_card = CARDS.pop()
         agent.add_card_to_hand(new_card, hand)
         agent._chips -= agent._bets[hand]  # Update the chips
@@ -413,6 +418,9 @@ def run_full_game():
     
     for player in AGENTS:
         player.reset_after_round()
+        if isinstance(player, KevinAgent):
+            player.update_statistics(outcome, player.get_chips(), player.last_action) # update statistics of win/lose/draw, number of chips at final and player's last action by Q-table
+            player.export_to_excel()
 
     debug("Ending game")
 

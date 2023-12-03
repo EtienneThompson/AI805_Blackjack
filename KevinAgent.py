@@ -1,9 +1,9 @@
-import random
+import random # for the Q-learning greedy policy
 from BaseAgent import BaseAgent
 import Enums
 import card_methods
-from collections import defaultdict
-
+from collections import defaultdict # for the Q-Learning. 
+import pandas as pd # for statistics data colletion. 
 
 class KevinAgent(BaseAgent):
     DEFAULT_BET = 50  # This will be the default betting amount
@@ -20,17 +20,29 @@ class KevinAgent(BaseAgent):
         self.gamma = 0.9 # discount factor  
         self.epsilon = 1.0
         self.display_q_table = True 
+        self.game_statistics =[]
+        self.last_action = None # last action default value 
     
     ######### Set Policy #####################  
     def epsilon_greedy_policy(self, state, hand):
-        choices = [Enums.AgentStates.HIT, Enums.AgentStates.STAND, Enums.AgentStates.DOUBLE_DOWN]
-        if self.q_table[state]:
-            # Return the action with the highest Q-Value for the current state
-            return max(self.q_table[state], key=self.q_table[state].get)
-        else:
-            if self.can_split(hand):
-                choices.append(Enums.AgentStates.SPLIT)
+        if random.random() < self.epsilon: #The vaule of epsilon is between 0 and 1.
+            # Need to put SPLIT as choice based if only can split 
+            choices = [Enums.AgentStates.HIT, Enums.AgentStates.STAND, Enums.AgentStates.DOUBLE_DOWN, Enums.AgentStates.SPLIT]
+            if self.can_split(hand): # Check if true for split 
+               choices.append(Enums.AgentStates.SPLIT) # Then return SPLIT for agent state 
             return random.choice(choices)
+        else: #in this case the agent will try to exploit what it has learned so far
+            # Return the action with the highest Q-Value for the current state
+            choices = [Enums.AgentStates.HIT, Enums.AgentStates.STAND, Enums.AgentStates.DOUBLE_DOWN, Enums.AgentStates.SPLIT]
+            if self.q_table[state]:
+                # Return the action with the highest Q-value for the current state
+                return max(self.q_table[state], key=self.q_table[state].get)
+            else:
+                # If no actions are recorded for this state in the Q-table choose randomly 
+                choices = [Enums.AgentStates.HIT, Enums.AgentStates.STAND, Enums.AgentStates.DOUBLE_DOWN, Enums.AgentStates.SPLIT]
+                if self.can_split(hand):
+                    choices.append(Enums.AgentStates.SPLIT)
+                    return random.choice(choices)
     
     ######### Learning algorithm #############
     def learn(self, state, action, reward, next_state):
@@ -86,14 +98,51 @@ class KevinAgent(BaseAgent):
             return min(self._chips, self.DEFAULT_BET * 2)
         else:
             # Bet the default amount, but not more than available chips
-            return min(self._chips, self.DEFAULT_BET)
             self._bets[hand] = 0
-
+            return min(self._chips, self.DEFAULT_BET)
+            
     def run_agent(self, hand):
         self.wait_for_user_input()
-
+        
+        # Check if the hand index is within the valid range ######## Deal with Index out of range Error 
+        if hand < 0 or hand >= len(self._hands):
+            raise IndexError(f"Hand index {hand} out of range for agent {self.get_name()}")
+        
         current_state = self.get_current_state(hand)
         action = self.epsilon_greedy_policy(current_state,hand)
+        
+        # Ensure that status list is long enought to accomodate the hand index ###### Deal with index out of range error. 
+        if hand >= len(self._statuses):
+            # Extend the _statuses lis with default values (None or Enum.AgentStates.ACTIVE)
+            self._statuses.extend([None] * (hand - len(self._statuses) + 1))
+        
         self._statuses[hand] = action
+        
+        action_str = str(action)
+        if '.' in action_str:
+            self.last_action = action_str.split('.')[1]
+        else:
+            self.last_action = action_str
+        
+        return action 
+    
+    ######## Deal with Index Out of Range Error ###########
+    def get_status(self, hand):
+    # Ensure that the hand index is within the range before accessing it
+        if hand < 0 or hand >= len(self._statuses):
+            raise IndexError(f"Status index {hand} out of range for agent {self.get_name()}")
+        return str(self._statuses[hand]).split(".")[1] if self._statuses[hand] is not None else 'UNKNOWN'
+    ######## Deal with Index Out of Range Error ###########
+    
+    def update_statistics(self, outcome, final_chip_count, last_actions): # passing in the outcome and final chip count after every end of game.
+        outcome_value = 1 if outcome == "win" else 0 # Change win to 1 and lose and draw to 0 for better statistical anlaysis. 
+        self.game_statistics.append({
+            "Game Outcome" : outcome_value,
+            "Final Chip Count" : final_chip_count,
+            "Action from Q-value" : last_actions
+        })
 
-        return self._statuses[hand]
+    def export_to_excel(agent, filename="C:\\BlackjackStatistics\\blackjack_statistics.xlsx"): # export the result to excel file using openpyxl(Excel Writer tool on pandas library)
+        df = pd.DataFrame(agent.game_statistics)
+        with pd.ExcelWriter(filename, engine='openpyxl') as writer:
+            df.to_excel(writer, sheet_name='KevinAgent Statistics') 
