@@ -83,16 +83,8 @@ class KevinAgent(BaseAgent):
         else: # For draw or anything else. 
             return 0 
 
-    def place_bet_by_hand(self, hand):  # this is new betting function
-        """Decide how much to bet based on the current hand."""
-        # Check if the hand contains an Ace or a 10-value card
-        if "A" in self._hands[hand] or any(card[:-1] in ["10", "J", "Q", "K"] for card in self._hands[hand]):
-            # Bet double the default amount, but not more than available chips
-            return min(self._chips, self.DEFAULT_BET * 2)
-        else:
-            # Bet the default amount, but not more than available chips
-            self._bets[hand] = 0
-            return min(self._chips, self.DEFAULT_BET)
+    def place_bet(self):
+        super().place_bet()
             
     def run_agent(self, hand):
         self.wait_for_user_input()
