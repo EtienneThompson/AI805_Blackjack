@@ -69,7 +69,7 @@ class BaseAgent:
 
     def is_agent_done(self) -> bool:
         """Checks if the agent is done with all hands."""
-        print(f"Current statuses: {self._statuses}")
+        # print(f"Current statuses: {self._statuses}")
         return all(status in {Enums.AgentStates.STAND, Enums.AgentStates.BUST, Enums.AgentStates.DOUBLE_DOWN} 
                    for status in self._statuses)
 
@@ -84,7 +84,7 @@ class BaseAgent:
 
     def set_status(self, new_status, hand: int = 0):
         """Sets the status of a specific hand of the agent."""
-        print(f"Setting status of hand {hand} to {new_status}")
+        # print(f"Setting status of hand {hand} to {new_status}")
         self._statuses[hand] = new_status
 
     def can_split(self, hand: int = 0) -> bool:

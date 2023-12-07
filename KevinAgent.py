@@ -3,7 +3,7 @@ from BaseAgent import BaseAgent
 import Enums
 import card_methods
 from collections import defaultdict # for the Q-Learning. 
-import pandas as pd # for statistics data colletion. 
+# import pandas as pd # for statistics data colletion. 
 import os # file handling
 
 class KevinAgent(BaseAgent):
@@ -58,8 +58,8 @@ class KevinAgent(BaseAgent):
         # Discount factor which determines importance of future rewards. 
         self.q_table[state][action] = new_value
         
-        if self.display_q_table:
-            self.print_q_table()
+        # if self.display_q_table:
+        #     self.print_q_table()
     
     def print_q_table(self): # check if Q-Table empty or not 
         print("\nCurrent Q-table:") # print if Q-Table not empty 
@@ -149,7 +149,7 @@ class KevinAgent(BaseAgent):
             "Q-value" : last_q_value 
         })
 
-    def export_to_excel(self, filename="C:\\BlackjackStatistics\\blackjack_statistics.xlsx"):
-        df = pd.DataFrame(self.game_statistics)
-        with pd.ExcelWriter(filename, engine='openpyxl') as writer:
-            df.to_excel(writer, sheet_name='KevinAgent Statistics')
+    # def export_to_excel(self, filename="C:\\BlackjackStatistics\\blackjack_statistics.xlsx"):
+    #     df = pd.DataFrame(self.game_statistics)
+    #     with pd.ExcelWriter(filename, engine='openpyxl') as writer:
+    #         df.to_excel(writer, sheet_name='KevinAgent Statistics')
