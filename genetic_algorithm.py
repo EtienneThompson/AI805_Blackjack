@@ -121,6 +121,6 @@ def run_genetic_algorithm(population_size, num_generations):
 
         new_population = create_next_generation(population, fitness_scores)
         population = new_population
-        print(f"Generation {generation + 1}/{num_generations} complete. Average Fitness: {average_fitness}")
+        # print(f"Generation {generation + 1}/{num_generations} complete.")
 
     return population, fitness_scores, average_fitness_per_generation

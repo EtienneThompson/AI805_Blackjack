@@ -17,6 +17,9 @@ class GameTree:
 
         self.traversed_nodes = 0
 
+    def get_traversed_nodes(self):
+        return self.traversed_nodes
+
     def generate_game_tree(self, node, depth, stop_generating):
         """Recursively generate the game tree from the current state."""
         if depth >= self.max_depth:
@@ -106,7 +109,7 @@ class GameTree:
     def make_decision(self):
         """Wrapper method for expeci-minimax algorithm method."""
         decision, weight = self._expectminimax(self.root, 0)
-        print(f"Expectiminimax traversed {self.traversed_nodes} nodes")
+        # print(f"Expectiminimax traversed {self.traversed_nodes} nodes")
         return [decision, weight]
 
     def _expectminimax(self, node, depth):

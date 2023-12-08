@@ -234,17 +234,17 @@ def print_table(dealer, *agents, is_dealer_turn, q_table=None):
 
     debug(sep_line)
     
-    if q_table is not None: # check if Q-Table empty or not 
-        print("\nQ-table for KevinAgent:") # print if Q-Table not empty 
-        for state, actions in sorted(q_table.items()): # loop through Q-table which are key, value pairs. States are printed in consistent order. 
-            print(f"State {state}:")  # Prints current situation the agent is in. 
-            for action, value in sorted(actions.items()): # loop over the items in the actions dictionary
-                print(f"   Action {action}: {value: .2f}") # prints action identifier and it's Q-value. 
-        print()        
+    # if q_table is not None: # check if Q-Table empty or not 
+    #     print("\nQ-table for KevinAgent:") # print if Q-Table not empty 
+    #     for state, actions in sorted(q_table.items()): # loop through Q-table which are key, value pairs. States are printed in consistent order. 
+    #         print(f"State {state}:")  # Prints current situation the agent is in. 
+    #         for action, value in sorted(actions.items()): # loop over the items in the actions dictionary
+    #             print(f"   Action {action}: {value: .2f}") # prints action identifier and it's Q-value. 
+    #     print()        
 
 def handle_agent_choice(choice, agent, hand):
     """Handle agent's choice"""
-    debug(f"[DEBUG] Handling choice for {agent.get_name()} - Hand {hand}: {choice}")
+    # debug(f"[DEBUG] Handling choice for {agent.get_name()} - Hand {hand}: {choice}")
     if choice == Enums.AgentStates.HIT:
         new_card = CARDS.pop()
         agent.add_card_to_hand(new_card, hand)
@@ -277,7 +277,7 @@ def handle_agent_choice(choice, agent, hand):
     agent.total_moves_made += 1
     
     new_status = agent.get_status(hand)
-    debug(f"[DEBUG] Post-action: Hand Value: {new_hand_value}, Status: {new_status}")
+    # debug(f"[DEBUG] Post-action: Hand Value: {new_hand_value}, Status: {new_status}")
 
 
 def run_turn_for_agent(agent, dealer, all_players):
@@ -287,18 +287,18 @@ def run_turn_for_agent(agent, dealer, all_players):
         # Run a single move for each hand that is available.
         for i in range(0, agent.get_number_of_hands()):
             if agent.is_agent_hand_done(i):
-                debug(f"[DEBUG] Hand {i} for {agent.get_name()} is done.")
+                # debug(f"[DEBUG] Hand {i} for {agent.get_name()} is done.")
                 continue  # skip any already finished hands.
 
             print_table(dealer, *all_players, is_dealer_turn=(agent == dealer))
 
-            debug(f"[DEBUG] Processing hand {i} for {agent.get_name()}")
+            # debug(f"[DEBUG] Processing hand {i} for {agent.get_name()}")
             choice = agent.run_agent(i)
             handle_agent_choice(choice, agent, i)
-            debug(f"[DEBUG] Hand {i} for {agent.get_name()} status after action: {agent.get_status(i)}")
+            # debug(f"[DEBUG] Hand {i} for {agent.get_name()} status after action: {agent.get_status(i)}")
 
-            if agent.is_agent_hand_done(i):
-                debug(f"[DEBUG] Hand {i} for {agent.get_name()} marked as done after action.")
+            # if agent.is_agent_hand_done(i):
+                # debug(f"[DEBUG] Hand {i} for {agent.get_name()} marked as done after action.")
 
 
 def handle_scoring(dealer, player):
@@ -391,7 +391,7 @@ def run_full_game():
         if isinstance(player, KevinAgent):
             # Update epsilon for exploration/exploitation balance. Higer epsilon value encourages the agent to explore more. 
             player.epsilon = max(player.MIN_EPSILON, player.epsilon * player.EPSILON_DECAY) # reduces the epsilon vaule by a factor 'EPSILON_DECAY'. max() ensure epsilon does not go below 'MIN_EPSILON'
-            player.print_q_table() # prints Q-table
+            # player.print_q_table() # prints Q-table
 
     run_turn_for_agent(dealer, dealer, AGENTS) # Point where to feed Q-learning. 
     
@@ -499,6 +499,11 @@ def main():
         print(f"Agent double downs: {player.num_double_downs}, double down percentage: {(player.num_double_downs / player.total_moves_made) * 100}")
         print(f"Agent splits: {player.num_splits}, splits percentage: {(player.num_splits / player.total_moves_made) * 100}")
         print(f"Agent stands: {player.num_stands}, stand percentage: {(player.num_stands / player.total_moves_made) * 100}")
+
+        if isinstance(player, EtienneAgent):
+            print(f"Agent average number of nodes traversed: {player.total_traversed_nodes / player.num_hands_played}")
+            print(f"Agent max traversed nodes: {player.max_traversed_nodes}")
+
         print()
 
         plt.plot([i for i in range(len(player.chips_per_round))], player.chips_per_round, label=player.get_name())
